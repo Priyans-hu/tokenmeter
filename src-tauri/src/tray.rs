@@ -9,10 +9,12 @@ const TRAY_ICON: &[u8] = include_bytes!("../icons/32x32.png");
 
 pub fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let refresh = MenuItem::with_id(app, "refresh", "Refresh Now", true, None::<&str>)?;
+    let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit TokenMeter", true, None::<&str>)?;
 
     let menu = MenuBuilder::new(app)
         .item(&refresh)
+        .item(&settings)
         .separator()
         .item(&quit)
         .build()?;
@@ -39,6 +41,13 @@ pub fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>
             "refresh" => {
                 let _ = app.emit("trigger-refresh", ());
             }
+            "settings" => {
+                let _ = app.emit("show-settings", ());
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }
             _ => {}
         })
         .build(app)?;
@@ -59,19 +68,16 @@ fn toggle_window(app: &AppHandle) {
 }
 
 fn position_window_near_tray(window: &tauri::WebviewWindow) {
-    if let Ok(monitor) = window.current_monitor() {
-        if let Some(monitor) = monitor {
-            let screen_size = monitor.size();
-            let scale = monitor.scale_factor();
-            let win_width = 360.0;
+    if let Ok(Some(monitor)) = window.current_monitor() {
+        let screen = monitor.size();
+        let scale = monitor.scale_factor();
+        let win_w = 360.0;
+        let x = (screen.width as f64 / scale) - win_w - 8.0;
+        let y = 25.0; // below macOS menu bar
 
-            let x = (screen_size.width as f64 / scale) - win_width - 10.0;
-            let y = 0.0; // top of screen, below menu bar
-
-            let _ = window.set_position(tauri::PhysicalPosition::new(
-                (x * scale) as i32,
-                (y * scale) as i32,
-            ));
-        }
+        let _ = window.set_position(tauri::PhysicalPosition::new(
+            (x * scale) as i32,
+            (y * scale) as i32,
+        ));
     }
 }

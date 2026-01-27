@@ -51,14 +51,6 @@
             </div>
           </section>
 
-          <section id="budget-section" class="budget-section" style="display:none">
-            <h2>Budget</h2>
-            <div class="budget-bar-container">
-              <div id="budget-bar" class="budget-bar"></div>
-            </div>
-            <span id="budget-label" class="budget-label"></span>
-          </section>
-
           <footer class="footer">
             <span id="last-updated">Last updated: --</span>
           </footer>
@@ -84,37 +76,12 @@
           </div>
 
           <div class="form-group">
-            <label>Budget Alerts</label>
-            <div class="budget-inputs">
-              <div class="input-row">
-                <span>Daily</span>
-                <input type="number" id="daily-budget" placeholder="e.g. 100" step="1" min="0" />
-              </div>
-              <div class="input-row">
-                <span>Weekly</span>
-                <input type="number" id="weekly-budget" placeholder="e.g. 500" step="1" min="0" />
-              </div>
-              <div class="input-row">
-                <span>Monthly</span>
-                <input type="number" id="monthly-budget" placeholder="e.g. 2000" step="1" min="0" />
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
             <label for="chart-days">Chart Range</label>
             <select id="chart-days">
               <option value="7" selected>7 days</option>
               <option value="14">14 days</option>
               <option value="30">30 days</option>
             </select>
-          </div>
-
-          <div class="form-group">
-            <label for="notifications-enabled" class="checkbox-label">
-              <input type="checkbox" id="notifications-enabled" checked />
-              Enable budget notifications
-            </label>
           </div>
 
           <button type="submit" class="save-btn">Save</button>

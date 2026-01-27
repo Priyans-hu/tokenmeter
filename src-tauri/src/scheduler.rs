@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use chrono::{Datelike, Local, NaiveDate};
 use tauri::{AppHandle, Emitter, Manager};
+use tauri_plugin_store::StoreExt;
 
 use crate::providers::types::{ProviderError, UsageSummary};
 use crate::state::AppState;
@@ -25,6 +26,13 @@ async fn refresh_and_emit(app: &AppHandle) {
     let state = app.state::<AppState>();
     match do_refresh(&state).await {
         Ok(summary) => {
+            // Persist to store for instant reopen on relaunch
+            if let Ok(store) = app.store("data.json") {
+                if let Ok(val) = serde_json::to_value(&summary) {
+                    store.set("last_summary", val);
+                    let _ = store.save();
+                }
+            }
             let _ = app.emit("usage-updated", &summary);
         }
         Err(e) => {

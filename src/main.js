@@ -48,10 +48,9 @@ function renderDashboard(data) {
 
   renderDailyChart(data.daily);
   renderModelBreakdown(data.todayModelBreakdowns);
-  renderBudget(data);
 
   const updated = new Date(data.lastUpdated);
-  $('last-updated').textContent = `Last updated: ${updated.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}`;
+  $('last-updated').textContent = `Updated ${updated.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}`;
 }
 
 function renderDailyChart(daily) {
@@ -134,28 +133,6 @@ function renderModelBreakdown(breakdowns) {
   });
 }
 
-function renderBudget(data) {
-  const config = JSON.parse(localStorage.getItem('config') || '{}');
-  const budget = config.dailyBudget;
-  const section = $('budget-section');
-
-  if (!budget || budget <= 0) {
-    section.style.display = 'none';
-    return;
-  }
-
-  section.style.display = 'block';
-  const pct = Math.min((data.todayCost / budget) * 100, 100);
-  const bar = $('budget-bar');
-  bar.style.width = `${pct}%`;
-
-  if (pct >= 100) bar.style.background = 'var(--red)';
-  else if (pct >= 80) bar.style.background = 'var(--yellow)';
-  else bar.style.background = 'var(--green)';
-
-  $('budget-label').textContent = `${formatCost(data.todayCost)} / ${formatCost(budget)} (${pct.toFixed(0)}%)`;
-}
-
 function showError(msg) {
   $('loading').style.display = 'none';
   $('content').style.display = 'none';
@@ -181,21 +158,13 @@ function showSettings() {
 function loadSettingsForm() {
   const config = JSON.parse(localStorage.getItem('config') || '{}');
   $('refresh-interval').value = config.refreshIntervalSecs || 300;
-  $('daily-budget').value = config.dailyBudget || '';
-  $('weekly-budget').value = config.weeklyBudget || '';
-  $('monthly-budget').value = config.monthlyBudget || '';
   $('chart-days').value = config.chartDays || 7;
-  $('notifications-enabled').checked = config.notificationsEnabled !== false;
 }
 
 function saveSettings() {
   const config = {
     refreshIntervalSecs: parseInt($('refresh-interval').value),
-    dailyBudget: parseFloat($('daily-budget').value) || null,
-    weeklyBudget: parseFloat($('weekly-budget').value) || null,
-    monthlyBudget: parseFloat($('monthly-budget').value) || null,
     chartDays: parseInt($('chart-days').value),
-    notificationsEnabled: $('notifications-enabled').checked,
   };
   localStorage.setItem('config', JSON.stringify(config));
   localStorage.setItem('chartDays', config.chartDays);
