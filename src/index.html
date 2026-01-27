@@ -4,36 +4,122 @@
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="styles.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri App</title>
+    <title>TokenMeter</title>
     <script type="module" src="/main.js" defer></script>
   </head>
-
   <body>
-    <main class="container">
-      <h1>Welcome to Tauri</h1>
+    <div id="app">
+      <!-- Dashboard View -->
+      <div id="dashboard-view">
+        <header id="header">
+          <h1>TokenMeter</h1>
+          <div class="header-actions">
+            <button id="refresh-btn" title="Refresh now">&#8635;</button>
+            <button id="settings-btn" title="Settings">&#9881;</button>
+          </div>
+        </header>
 
-      <div class="row">
-        <a href="https://tauri.app" target="_blank">
-          <img src="/assets/tauri.svg" class="logo tauri" alt="Tauri logo" />
-        </a>
-        <a
-          href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
-          target="_blank"
-        >
-          <img
-            src="/assets/javascript.svg"
-            class="logo vanilla"
-            alt="JavaScript logo"
-          />
-        </a>
+        <div id="loading" class="loading">Loading usage data...</div>
+        <div id="error" class="error" style="display:none"></div>
+
+        <div id="content" style="display:none">
+          <section class="stats-cards">
+            <div class="stat-card">
+              <span class="stat-label">Today</span>
+              <span class="stat-value" id="today-cost">$0.00</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">This Week</span>
+              <span class="stat-value" id="week-cost">$0.00</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">This Month</span>
+              <span class="stat-value" id="month-cost">$0.00</span>
+            </div>
+          </section>
+
+          <section class="chart-section">
+            <h2>Daily Cost</h2>
+            <div id="daily-chart"></div>
+          </section>
+
+          <section class="breakdown-section">
+            <h2>Model Breakdown (Today)</h2>
+            <div class="breakdown-row">
+              <div id="donut" class="donut"></div>
+              <div id="breakdown-legend" class="breakdown-legend"></div>
+            </div>
+          </section>
+
+          <section id="budget-section" class="budget-section" style="display:none">
+            <h2>Budget</h2>
+            <div class="budget-bar-container">
+              <div id="budget-bar" class="budget-bar"></div>
+            </div>
+            <span id="budget-label" class="budget-label"></span>
+          </section>
+
+          <footer class="footer">
+            <span id="last-updated">Last updated: --</span>
+          </footer>
+        </div>
       </div>
-      <p>Click on the Tauri logo to learn more about the framework</p>
 
-      <form class="row" id="greet-form">
-        <input id="greet-input" placeholder="Enter a name..." />
-        <button type="submit">Greet</button>
-      </form>
-      <p id="greet-msg"></p>
-    </main>
+      <!-- Settings View -->
+      <div id="settings-view" style="display:none">
+        <header id="settings-header">
+          <button id="back-btn" title="Back">&larr;</button>
+          <h1>Settings</h1>
+        </header>
+
+        <form id="settings-form">
+          <div class="form-group">
+            <label for="refresh-interval">Refresh Interval</label>
+            <select id="refresh-interval">
+              <option value="60">1 min</option>
+              <option value="300" selected>5 min</option>
+              <option value="600">10 min</option>
+              <option value="900">15 min</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Budget Alerts</label>
+            <div class="budget-inputs">
+              <div class="input-row">
+                <span>Daily</span>
+                <input type="number" id="daily-budget" placeholder="e.g. 100" step="1" min="0" />
+              </div>
+              <div class="input-row">
+                <span>Weekly</span>
+                <input type="number" id="weekly-budget" placeholder="e.g. 500" step="1" min="0" />
+              </div>
+              <div class="input-row">
+                <span>Monthly</span>
+                <input type="number" id="monthly-budget" placeholder="e.g. 2000" step="1" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="chart-days">Chart Range</label>
+            <select id="chart-days">
+              <option value="7" selected>7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="notifications-enabled" class="checkbox-label">
+              <input type="checkbox" id="notifications-enabled" checked />
+              Enable budget notifications
+            </label>
+          </div>
+
+          <button type="submit" class="save-btn">Save</button>
+        </form>
+      </div>
+    </div>
   </body>
 </html>
