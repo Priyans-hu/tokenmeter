@@ -17,8 +17,6 @@ Parses Claude Code's local conversation data to show real-time usage stats — n
 - **Daily cost chart** — bar chart with 7/14/30 day range
 - **Model breakdown** — donut chart showing per-model usage (Opus, Sonnet, Haiku)
 - **Auto-refresh** — every 5 minutes (configurable)
-- **Click outside to close** — native popover behavior
-- **Single instance** — prevents duplicate app launches
 - **Instant reopen** — cached data persists across restarts
 
 ## Installation
