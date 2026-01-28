@@ -102,27 +102,3 @@ struct DailyChartView: View {
         return .blue
     }
 }
-
-#Preview {
-    let sampleData: [DailyUsage] = (0..<7).map { i in
-        let date = Calendar.current.date(byAdding: .day, value: -i, to: Date())!
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-
-        return DailyUsage(
-            date: formatter.string(from: date),
-            inputTokens: UInt64.random(in: 10000...100000),
-            outputTokens: UInt64.random(in: 5000...50000),
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
-            totalTokens: UInt64.random(in: 15000...150000),
-            totalCost: Double.random(in: 0.5...5.0),
-            modelsUsed: ["claude-sonnet"],
-            modelBreakdowns: []
-        )
-    }
-
-    return DailyChartView(daily: sampleData)
-        .padding()
-        .frame(width: 340)
-}

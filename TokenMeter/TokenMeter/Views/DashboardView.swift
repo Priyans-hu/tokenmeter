@@ -101,7 +101,6 @@ struct HeaderView: View {
                 Task { await viewModel.refresh() }
             } label: {
                 Image(systemName: viewModel.isLoading ? "arrow.triangle.2.circlepath" : "arrow.clockwise")
-                    .symbolEffect(.rotate, isActive: viewModel.isLoading)
             }
             .buttonStyle(.plain)
             .disabled(viewModel.isLoading)
@@ -232,9 +231,4 @@ struct QuickLinksView: View {
         }
         .padding(.top, 8)
     }
-}
-
-#Preview {
-    DashboardView(viewModel: UsageViewModel())
-        .frame(width: 340, height: 600)
 }

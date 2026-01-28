@@ -68,8 +68,3 @@ struct SettingsView: View {
         .padding(16)
     }
 }
-
-#Preview {
-    SettingsView(viewModel: UsageViewModel())
-        .frame(width: 340, height: 400)
-}

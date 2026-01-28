@@ -82,23 +82,3 @@ struct CostCard: View {
         return "\(tokens) tokens"
     }
 }
-
-#Preview {
-    CostSummaryView(
-        summary: UsageSummary(
-            daily: [],
-            todayCost: 2.34,
-            weekCost: 12.50,
-            monthCost: 38.92,
-            todayTokens: 125_000,
-            todayModelBreakdowns: [],
-            rateLimits: RateLimitInfo(
-                session: WindowInfo(tokensUsed: 0, inputTokens: 0, outputTokens: 0, sessionsActive: 0, oldestMessageTime: nil, resetsAt: nil, minutesUntilReset: nil, windowHours: 5),
-                weekly: WindowInfo(tokensUsed: 0, inputTokens: 0, outputTokens: 0, sessionsActive: 0, oldestMessageTime: nil, resetsAt: nil, minutesUntilReset: nil, windowHours: 168)
-            ),
-            lastUpdated: ""
-        )
-    )
-    .padding()
-    .frame(width: 340)
-}

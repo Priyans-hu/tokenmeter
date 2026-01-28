@@ -97,34 +97,3 @@ extension Color {
         )
     }
 }
-
-#Preview {
-    ModelBreakdownView(breakdowns: [
-        ModelBreakdown(
-            modelName: "claude-opus-4",
-            inputTokens: 50000,
-            outputTokens: 25000,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
-            cost: 1.20
-        ),
-        ModelBreakdown(
-            modelName: "claude-sonnet-4",
-            inputTokens: 80000,
-            outputTokens: 40000,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
-            cost: 0.80
-        ),
-        ModelBreakdown(
-            modelName: "claude-haiku-3",
-            inputTokens: 200000,
-            outputTokens: 100000,
-            cacheCreationTokens: 0,
-            cacheReadTokens: 0,
-            cost: 0.34
-        )
-    ])
-    .padding()
-    .frame(width: 340)
-}

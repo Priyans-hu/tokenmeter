@@ -10,7 +10,6 @@ struct TokenMeterApp: App {
                 .frame(width: 340)
         } label: {
             Image(systemName: "chart.bar.fill")
-                .symbolRenderingMode(.template)
         }
         .menuBarExtraStyle(.window)
     }

@@ -92,39 +92,3 @@ struct RateLimitView: View {
         return "\(tokens) tokens"
     }
 }
-
-#Preview {
-    VStack {
-        RateLimitView(
-            title: "Session Rate Limit",
-            info: WindowInfo(
-                tokensUsed: 350_000,
-                inputTokens: 200_000,
-                outputTokens: 150_000,
-                sessionsActive: 3,
-                oldestMessageTime: nil,
-                resetsAt: nil,
-                minutesUntilReset: 165,
-                windowHours: 5
-            ),
-            limit: 1_000_000
-        )
-
-        RateLimitView(
-            title: "Weekly Rate Limit",
-            info: WindowInfo(
-                tokensUsed: 2_500_000,
-                inputTokens: 1_500_000,
-                outputTokens: 1_000_000,
-                sessionsActive: 12,
-                oldestMessageTime: nil,
-                resetsAt: nil,
-                minutesUntilReset: 5760,
-                windowHours: 168
-            ),
-            limit: 5_000_000
-        )
-    }
-    .padding()
-    .frame(width: 340)
-}
