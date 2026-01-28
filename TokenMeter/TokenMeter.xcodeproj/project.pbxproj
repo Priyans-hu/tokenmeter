@@ -1,0 +1,408 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000010000000000000001 /* TokenMeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* TokenMeterApp.swift */; };
+		A10000020000000000000002 /* UsageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000020000000000000002 /* UsageViewModel.swift */; };
+		A10000030000000000000003 /* UsageSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000030000000000000003 /* UsageSummary.swift */; };
+		A10000040000000000000004 /* UsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000040000000000000004 /* UsageService.swift */; };
+		A10000050000000000000005 /* ContextWindowParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000050000000000000005 /* ContextWindowParser.swift */; };
+		A10000060000000000000006 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000060000000000000006 /* UpdateChecker.swift */; };
+		A10000070000000000000007 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000070000000000000007 /* DashboardView.swift */; };
+		A10000080000000000000008 /* RateLimitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000080000000000000008 /* RateLimitView.swift */; };
+		A10000090000000000000009 /* CostSummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000090000000000000009 /* CostSummaryView.swift */; };
+		A1000010000000000000000A /* DailyChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010000000000000000A /* DailyChartView.swift */; };
+		A1000011000000000000000B /* ModelBreakdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000000B /* ModelBreakdownView.swift */; };
+		A1000012000000000000000C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000012000000000000000C /* SettingsView.swift */; };
+		A1000013000000000000000D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000013000000000000000D /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A00000010000000000000001 /* TokenMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TokenMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000010000000000000001 /* TokenMeterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenMeterApp.swift; sourceTree = "<group>"; };
+		A20000020000000000000002 /* UsageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageViewModel.swift; sourceTree = "<group>"; };
+		A20000030000000000000003 /* UsageSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageSummary.swift; sourceTree = "<group>"; };
+		A20000040000000000000004 /* UsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageService.swift; sourceTree = "<group>"; };
+		A20000050000000000000005 /* ContextWindowParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextWindowParser.swift; sourceTree = "<group>"; };
+		A20000060000000000000006 /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		A20000070000000000000007 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		A20000080000000000000008 /* RateLimitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RateLimitView.swift; sourceTree = "<group>"; };
+		A20000090000000000000009 /* CostSummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CostSummaryView.swift; sourceTree = "<group>"; };
+		A2000010000000000000000A /* DailyChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyChartView.swift; sourceTree = "<group>"; };
+		A2000011000000000000000B /* ModelBreakdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelBreakdownView.swift; sourceTree = "<group>"; };
+		A2000012000000000000000C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A2000013000000000000000D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A2000014000000000000000E /* TokenMeter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TokenMeter.entitlements; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000010000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A40000010000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A40000020000000000000002 /* TokenMeter */,
+				A40000030000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A40000020000000000000002 /* TokenMeter */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000001 /* TokenMeterApp.swift */,
+				A20000020000000000000002 /* UsageViewModel.swift */,
+				A40000040000000000000004 /* Models */,
+				A40000050000000000000005 /* Services */,
+				A40000060000000000000006 /* Views */,
+				A40000070000000000000007 /* Resources */,
+				A2000014000000000000000E /* TokenMeter.entitlements */,
+			);
+			path = TokenMeter;
+			sourceTree = "<group>";
+		};
+		A40000030000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000010000000000000001 /* TokenMeter.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A40000040000000000000004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000030000000000000003 /* UsageSummary.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A40000050000000000000005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				A20000040000000000000004 /* UsageService.swift */,
+				A20000050000000000000005 /* ContextWindowParser.swift */,
+				A20000060000000000000006 /* UpdateChecker.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		A40000060000000000000006 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A20000070000000000000007 /* DashboardView.swift */,
+				A20000080000000000000008 /* RateLimitView.swift */,
+				A20000090000000000000009 /* CostSummaryView.swift */,
+				A2000010000000000000000A /* DailyChartView.swift */,
+				A2000011000000000000000B /* ModelBreakdownView.swift */,
+				A2000012000000000000000C /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A40000070000000000000007 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A2000013000000000000000D /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000010000000000000001 /* TokenMeter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000010000000000000001 /* Build configuration list for PBXNativeTarget "TokenMeter" */;
+			buildPhases = (
+				A50000020000000000000002 /* Sources */,
+				A30000010000000000000001 /* Frameworks */,
+				A50000030000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TokenMeter;
+			productName = TokenMeter;
+			productReference = A00000010000000000000001 /* TokenMeter.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A70000010000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A50000010000000000000001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A60000020000000000000002 /* Build configuration list for PBXProject "TokenMeter" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A40000010000000000000001;
+			productRefGroup = A40000030000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A50000010000000000000001 /* TokenMeter */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A50000030000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000013000000000000000D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A50000020000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000010000000000000001 /* TokenMeterApp.swift in Sources */,
+				A10000020000000000000002 /* UsageViewModel.swift in Sources */,
+				A10000030000000000000003 /* UsageSummary.swift in Sources */,
+				A10000040000000000000004 /* UsageService.swift in Sources */,
+				A10000050000000000000005 /* ContextWindowParser.swift in Sources */,
+				A10000060000000000000006 /* UpdateChecker.swift in Sources */,
+				A10000070000000000000007 /* DashboardView.swift in Sources */,
+				A10000080000000000000008 /* RateLimitView.swift in Sources */,
+				A10000090000000000000009 /* CostSummaryView.swift in Sources */,
+				A1000010000000000000000A /* DailyChartView.swift in Sources */,
+				A1000011000000000000000B /* ModelBreakdownView.swift in Sources */,
+				A1000012000000000000000C /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A80000010000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A80000020000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		A80000030000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TokenMeter/TokenMeter.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TokenMeter;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.priyanshugarg.tokenmeter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A80000040000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TokenMeter/TokenMeter.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = TokenMeter;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.priyanshugarg.tokenmeter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A60000010000000000000001 /* Build configuration list for PBXNativeTarget "TokenMeter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000030000000000000003 /* Debug */,
+				A80000040000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A60000020000000000000002 /* Build configuration list for PBXProject "TokenMeter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A80000010000000000000001 /* Debug */,
+				A80000020000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A70000010000000000000001 /* Project object */;
+}
