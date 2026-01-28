@@ -45,7 +45,8 @@ actor UsageService {
 
         do {
             let decoder = JSONDecoder()
-            return try decoder.decode([DailyUsage].self, from: outputData)
+            let response = try decoder.decode(CcusageResponse.self, from: outputData)
+            return response.daily
         } catch {
             throw UsageServiceError.parseError(error.localizedDescription)
         }
