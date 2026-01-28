@@ -1,6 +1,6 @@
 [package]
 name = "tokenmeter"
-version = "0.1.0"
+version = "0.2.0"
 description = "macOS menu bar app for AI token usage visualization"
 authors = ["Priyanshu"]
 edition = "2021"
