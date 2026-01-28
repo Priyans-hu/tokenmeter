@@ -12,7 +12,10 @@
       <!-- Dashboard View -->
       <div id="dashboard-view">
         <header id="header">
-          <h1>TokenMeter</h1>
+          <div class="header-left">
+            <h1>TokenMeter</h1>
+            <span id="last-updated" class="header-updated">--</span>
+          </div>
           <div class="header-actions">
             <button id="refresh-btn" title="Refresh now">&#8635;</button>
             <button id="settings-btn" title="Settings">&#9881;</button>
@@ -23,63 +26,115 @@
         <div id="error" class="error" style="display:none"></div>
 
         <div id="content" style="display:none">
-          <section class="stats-cards">
-            <div class="stat-card">
-              <span class="stat-label">Today</span>
-              <span class="stat-value" id="today-cost">$0.00</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">This Week</span>
-              <span class="stat-value" id="week-cost">$0.00</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">This Month</span>
-              <span class="stat-value" id="month-cost">$0.00</span>
+          <!-- Update Banner -->
+          <div id="update-banner" class="update-banner" style="display:none">
+            <span id="update-text">Update available</span>
+            <button id="update-action" class="update-action">View</button>
+            <button id="update-dismiss" class="update-dismiss">&times;</button>
+          </div>
+
+          <!-- Session Rate Limit -->
+          <section class="rate-section">
+            <h2>Session</h2>
+            <div class="rate-card">
+              <div class="rate-bar-row">
+                <div class="rate-bar">
+                  <div id="session-fill" class="rate-fill"></div>
+                </div>
+              </div>
+              <div class="rate-labels">
+                <span id="session-pct" class="rate-pct">0% used</span>
+                <span id="session-reset" class="rate-reset">--</span>
+              </div>
+              <div id="session-pace" class="pace-line"></div>
             </div>
           </section>
 
-          <section class="context-window-section">
-            <h2>Context Window (5h)</h2>
-            <div class="context-window-card">
-              <div class="cw-progress-row">
-                <div class="cw-progress-bar">
-                  <div id="cw-fill" class="cw-fill"></div>
+          <div class="section-divider"></div>
+
+          <!-- Weekly Rate Limit -->
+          <section class="rate-section">
+            <h2>Weekly</h2>
+            <div class="rate-card">
+              <div class="rate-bar-row">
+                <div class="rate-bar">
+                  <div id="weekly-fill" class="rate-fill"></div>
                 </div>
-                <span id="cw-pct" class="cw-pct">0%</span>
               </div>
-              <div class="cw-details">
-                <div class="cw-stat">
-                  <span class="cw-stat-label">Tokens</span>
-                  <span id="cw-tokens" class="cw-stat-value">0</span>
-                </div>
-                <div class="cw-stat">
-                  <span class="cw-stat-label">Sessions</span>
-                  <span id="cw-sessions" class="cw-stat-value">0</span>
-                </div>
-                <div class="cw-stat">
-                  <span class="cw-stat-label">Resets in</span>
-                  <span id="cw-reset" class="cw-stat-value">--</span>
-                </div>
+              <div class="rate-labels">
+                <span id="weekly-pct" class="rate-pct">0% used</span>
+                <span id="weekly-reset" class="rate-reset">--</span>
               </div>
             </div>
           </section>
 
+          <div class="section-divider"></div>
+
+          <!-- Cost Section -->
+          <section class="cost-section">
+            <h2>Cost</h2>
+            <div class="cost-list">
+              <div class="cost-row">
+                <span class="cost-label">Today</span>
+                <span class="cost-values">
+                  <span id="today-cost" class="cost-amount">$0.00</span>
+                  <span id="today-tokens" class="cost-tokens"></span>
+                </span>
+              </div>
+              <div class="cost-row">
+                <span class="cost-label">This Week</span>
+                <span class="cost-values">
+                  <span id="week-cost" class="cost-amount">$0.00</span>
+                </span>
+              </div>
+              <div class="cost-row">
+                <span class="cost-label">This Month</span>
+                <span class="cost-values">
+                  <span id="month-cost" class="cost-amount">$0.00</span>
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <div class="section-divider"></div>
+
+          <!-- Daily Chart -->
           <section class="chart-section">
-            <h2>Daily Cost</h2>
+            <div class="chart-header">
+              <h2>Daily Cost</h2>
+              <select id="chart-range" class="chart-range-select">
+                <option value="7" selected>7d</option>
+                <option value="14">14d</option>
+                <option value="30">30d</option>
+              </select>
+            </div>
             <div id="daily-chart"></div>
           </section>
 
+          <div class="section-divider"></div>
+
+          <!-- Model Breakdown -->
           <section class="breakdown-section">
-            <h2>Model Breakdown (Today)</h2>
+            <h2>Model Breakdown</h2>
             <div class="breakdown-row">
               <div id="donut" class="donut"></div>
               <div id="breakdown-legend" class="breakdown-legend"></div>
             </div>
           </section>
 
-          <footer class="footer">
-            <span id="last-updated">Last updated: --</span>
-          </footer>
+          <div class="section-divider"></div>
+
+          <!-- Quick Links -->
+          <section class="quick-links">
+            <a id="link-dashboard" class="quick-link">
+              <span>Usage Dashboard</span>
+              <span class="quick-link-arrow">&#8599;</span>
+            </a>
+            <a id="link-status" class="quick-link">
+              <span>Status Page</span>
+              <span class="quick-link-arrow">&#8599;</span>
+            </a>
+          </section>
         </div>
       </div>
 
@@ -98,15 +153,6 @@
               <option value="300" selected>5 min</option>
               <option value="600">10 min</option>
               <option value="900">15 min</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="chart-days">Chart Range</label>
-            <select id="chart-days">
-              <option value="7" selected>7 days</option>
-              <option value="14">14 days</option>
-              <option value="30">30 days</option>
             </select>
           </div>
 
