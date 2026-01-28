@@ -21,6 +21,40 @@ Parses Claude Code's local conversation data to show real-time usage stats — n
 - **Single instance** — prevents duplicate app launches
 - **Instant reopen** — cached data persists across restarts
 
+## Installation
+
+### Quick Install (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Priyans-hu/tokenmeter/main/install.sh | bash
+```
+
+Downloads the latest release, extracts to `/Applications`, and removes quarantine.
+
+### Manual Download
+
+1. Download `TokenMeter-v*.zip` from [Releases](https://github.com/Priyans-hu/tokenmeter/releases/latest)
+2. Extract and move `TokenMeter.app` to `/Applications`
+3. Right-click → Open on first launch (to bypass Gatekeeper)
+
+### Build from Source
+
+```bash
+git clone https://github.com/Priyans-hu/tokenmeter.git
+cd tokenmeter
+npm install
+npm run tauri build -- --bundles app
+```
+
+Output: `src-tauri/target/release/bundle/macos/TokenMeter.app`
+
+### Prerequisites
+
+Before running TokenMeter, install:
+
+- [ccusage](https://github.com/yucchiy/ccusage): `npm install -g ccusage`
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and used (generates the local data TokenMeter reads)
+
 ## How It Works
 
 TokenMeter reads Claude Code's local data from two sources:
@@ -30,14 +64,6 @@ TokenMeter reads Claude Code's local data from two sources:
 
 No API keys or cloud services required. Everything is local.
 
-## Prerequisites
-
-- macOS (Apple Silicon or Intel)
-- [Rust](https://rustup.rs/)
-- Node.js
-- [ccusage](https://github.com/yucchiy/ccusage): `npm install -g ccusage`
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and used (for local data)
-
 ## Development
 
 ```bash
@@ -45,15 +71,7 @@ npm install
 npm run tauri dev
 ```
 
-## Build
-
-```bash
-npm run tauri build -- --bundles app
-```
-
-Output: `src-tauri/target/release/bundle/macos/TokenMeter.app`
-
-Move to `/Applications` for permanent use.
+Requires [Rust](https://rustup.rs/) and Node.js.
 
 ## Architecture
 
