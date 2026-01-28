@@ -28,15 +28,15 @@ struct DashboardView: View {
                         if let summary = viewModel.summary {
                             // Rate Limits
                             RateLimitView(
-                                title: "Session Rate Limit",
+                                title: "5-Hour Session",
                                 info: summary.rateLimits.session,
-                                limit: 1_000_000  // Approximate 5h limit
+                                outputLimit: viewModel.selectedPlan.sessionOutputLimit
                             )
 
                             RateLimitView(
-                                title: "Weekly Rate Limit",
+                                title: "Weekly (7 days)",
                                 info: summary.rateLimits.weekly,
-                                limit: 5_000_000  // Approximate weekly limit
+                                outputLimit: viewModel.selectedPlan.weeklyOutputLimit
                             )
 
                             Divider()

@@ -11,11 +11,6 @@ struct UsageSummary: Codable {
     let lastUpdated: String
 }
 
-// Wrapper for ccusage JSON output: { "daily": [...] }
-struct CcusageResponse: Codable {
-    let daily: [DailyUsage]
-}
-
 struct DailyUsage: Codable, Identifiable {
     var id: String { date }
 
@@ -69,4 +64,38 @@ struct WindowInfo: Codable {
     let resetsAt: String?
     let minutesUntilReset: UInt32?
     let windowHours: UInt32
+}
+
+// MARK: - Claude Plan
+
+enum ClaudePlan: String, CaseIterable, Codable {
+    case pro
+    case max5
+    case max20
+
+    var displayName: String {
+        switch self {
+        case .pro: return "Pro ($20/mo)"
+        case .max5: return "Max 5x ($100/mo)"
+        case .max20: return "Max 20x ($200/mo)"
+        }
+    }
+
+    // Approximate output token limits per 5-hour window (community estimates)
+    var sessionOutputLimit: UInt64 {
+        switch self {
+        case .pro: return 45_000
+        case .max5: return 225_000
+        case .max20: return 900_000
+        }
+    }
+
+    // Approximate output token limits per 7-day window (community estimates)
+    var weeklyOutputLimit: UInt64 {
+        switch self {
+        case .pro: return 500_000
+        case .max5: return 2_500_000
+        case .max20: return 10_000_000
+        }
+    }
 }
