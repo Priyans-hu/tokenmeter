@@ -39,13 +39,14 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_usage,
             commands::refresh_usage,
+            commands::check_for_updates,
         ])
         .setup(|app| {
             // Step 1: Hide dock icon — menu-bar-only app
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
-            // Step 2: Apply macOS vibrancy (frosted glass)
+            // Step 2: Apply macOS vibrancy (dark frosted glass)
             #[cfg(target_os = "macos")]
             {
                 use window_vibrancy::{
@@ -54,7 +55,7 @@ pub fn run() {
                 let window = app.get_webview_window("main").unwrap();
                 let _ = apply_vibrancy(
                     &window,
-                    NSVisualEffectMaterial::Popover,
+                    NSVisualEffectMaterial::HudWindow,
                     Some(NSVisualEffectState::Active),
                     Some(10.0),
                 );
