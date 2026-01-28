@@ -4,6 +4,7 @@ use chrono::{Datelike, Local, NaiveDate};
 use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_store::StoreExt;
 
+use crate::context_window;
 use crate::providers::types::{ProviderError, UsageSummary};
 use crate::state::AppState;
 
@@ -97,6 +98,7 @@ fn build_summary(
         .map(|d| d.total_cost)
         .sum();
 
+    let context_window = context_window::compute();
     let last_updated = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
 
     Ok(UsageSummary {
@@ -106,6 +108,7 @@ fn build_summary(
         month_cost,
         today_tokens,
         today_model_breakdowns,
+        context_window,
         last_updated,
     })
 }

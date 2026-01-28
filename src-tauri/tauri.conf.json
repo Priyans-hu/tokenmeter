@@ -14,7 +14,7 @@
         "label": "main",
         "title": "TokenMeter",
         "width": 360,
-        "height": 520,
+        "height": 600,
         "resizable": false,
         "decorations": false,
         "visible": false,

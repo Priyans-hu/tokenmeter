@@ -1,4 +1,5 @@
 mod commands;
+mod context_window;
 mod providers;
 mod scheduler;
 mod state;
@@ -27,6 +28,13 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // When a second instance is launched, show the existing window
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
             commands::get_usage,
@@ -40,13 +48,15 @@ pub fn run() {
             // Step 2: Apply macOS vibrancy (frosted glass)
             #[cfg(target_os = "macos")]
             {
-                use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+                use window_vibrancy::{
+                    apply_vibrancy, NSVisualEffectMaterial, NSVisualEffectState,
+                };
                 let window = app.get_webview_window("main").unwrap();
                 let _ = apply_vibrancy(
                     &window,
-                    NSVisualEffectMaterial::HudWindow,
-                    None,
-                    None,
+                    NSVisualEffectMaterial::Popover,
+                    Some(NSVisualEffectState::Active),
+                    Some(10.0),
                 );
             }
 

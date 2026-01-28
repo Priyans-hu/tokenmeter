@@ -20,6 +20,21 @@ function formatCost(cost) {
   return `$${cost.toFixed(2)}`;
 }
 
+function formatTokens(tokens) {
+  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`;
+  if (tokens >= 1_000) return `${(tokens / 1_000).toFixed(1)}k`;
+  return `${tokens}`;
+}
+
+function formatResetTime(minutes) {
+  if (minutes == null) return '--';
+  if (minutes <= 0) return 'now';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
 function formatDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en', { month: 'short', day: 'numeric' });
@@ -46,11 +61,36 @@ function renderDashboard(data) {
   $('week-cost').textContent = formatCost(data.weekCost);
   $('month-cost').textContent = formatCost(data.monthCost);
 
+  renderContextWindow(data.contextWindow);
   renderDailyChart(data.daily);
   renderModelBreakdown(data.todayModelBreakdowns);
 
   const updated = new Date(data.lastUpdated);
   $('last-updated').textContent = `Updated ${updated.toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}`;
+}
+
+function renderContextWindow(cw) {
+  if (!cw) return;
+
+  const tokens = cw.tokensUsed || 0;
+  // Estimate: ~1M tokens for Opus 5h window (configurable later)
+  const limit = 1_000_000;
+  const pct = Math.min((tokens / limit) * 100, 100);
+
+  $('cw-fill').style.width = `${pct}%`;
+  // Color gradient: green → yellow → red
+  if (pct < 50) {
+    $('cw-fill').style.background = 'var(--green)';
+  } else if (pct < 80) {
+    $('cw-fill').style.background = 'var(--yellow)';
+  } else {
+    $('cw-fill').style.background = 'var(--red)';
+  }
+
+  $('cw-pct').textContent = `${pct.toFixed(0)}%`;
+  $('cw-tokens').textContent = formatTokens(tokens);
+  $('cw-sessions').textContent = cw.sessionsActive || 0;
+  $('cw-reset').textContent = formatResetTime(cw.minutesUntilReset);
 }
 
 function renderDailyChart(daily) {

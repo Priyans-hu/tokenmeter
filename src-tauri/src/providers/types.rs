@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::context_window::ContextWindowInfo;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DailyUsage {
@@ -34,6 +36,7 @@ pub struct UsageSummary {
     pub month_cost: f64,
     pub today_tokens: u64,
     pub today_model_breakdowns: Vec<ModelBreakdown>,
+    pub context_window: ContextWindowInfo,
     pub last_updated: String,
 }
 

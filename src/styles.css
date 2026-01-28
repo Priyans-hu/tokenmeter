@@ -140,13 +140,84 @@ header h1 {
   letter-spacing: -0.5px;
 }
 
+/* Context Window */
+.context-window-section {
+  margin-bottom: 16px;
+}
+
+.context-window-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.cw-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cw-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cw-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: var(--green);
+  transition: width 0.4s ease, background 0.4s ease;
+}
+
+.cw-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 30px;
+  text-align: right;
+}
+
+.cw-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.cw-stat {
+  text-align: center;
+}
+
+.cw-stat-label {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.cw-stat-value {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
 /* Chart Section */
 .chart-section {
   margin-bottom: 16px;
 }
 
 .chart-section h2,
-.breakdown-section h2 {
+.breakdown-section h2,
+.context-window-section h2 {
   font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
