@@ -4,16 +4,22 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Emitter, Manager, PhysicalPosition,
 };
+use tauri_plugin_opener::OpenerExt;
 
 const TRAY_ICON: &[u8] = include_bytes!("../icons/32x32.png");
 
 pub fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let refresh = MenuItem::with_id(app, "refresh", "Refresh Now", true, None::<&str>)?;
+    let dashboard = MenuItem::with_id(app, "dashboard", "Usage Dashboard", true, None::<&str>)?;
+    let updates = MenuItem::with_id(app, "updates", "Check for Updates", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit TokenMeter", true, None::<&str>)?;
 
     let menu = MenuBuilder::new(app)
         .item(&refresh)
+        .item(&dashboard)
+        .separator()
+        .item(&updates)
         .item(&settings)
         .separator()
         .item(&quit)
@@ -53,6 +59,18 @@ pub fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>
             "quit" => app.exit(0),
             "refresh" => {
                 let _ = app.emit("trigger-refresh", ());
+            }
+            "dashboard" => {
+                let _ = app
+                    .opener()
+                    .open_url("https://console.anthropic.com/settings/usage", None::<&str>);
+            }
+            "updates" => {
+                let _ = app.emit("check-for-updates", ());
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
             }
             "settings" => {
                 let _ = app.emit("show-settings", ());
