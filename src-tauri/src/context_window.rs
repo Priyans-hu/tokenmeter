@@ -6,16 +6,22 @@ use std::time::{Duration, SystemTime};
 use chrono::{DateTime, Duration as ChronoDuration, Utc};
 use serde::{Deserialize, Serialize};
 
-const WINDOW_HOURS: i64 = 5;
+const SESSION_HOURS: i64 = 5;
+const WEEKLY_HOURS: i64 = 168; // 7 days
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ContextWindowInfo {
+pub struct RateLimitInfo {
+    pub session: WindowInfo,
+    pub weekly: WindowInfo,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WindowInfo {
     pub tokens_used: u64,
     pub input_tokens: u64,
     pub output_tokens: u64,
-    pub cache_read_tokens: u64,
-    pub cache_creation_tokens: u64,
     pub sessions_active: u32,
     pub oldest_message_time: Option<String>,
     pub resets_at: Option<String>,
@@ -42,12 +48,59 @@ struct MessageData {
 struct UsageData {
     input_tokens: Option<u64>,
     output_tokens: Option<u64>,
-    cache_read_input_tokens: Option<u64>,
-    cache_creation_input_tokens: Option<u64>,
 }
 
-pub fn compute() -> ContextWindowInfo {
-    let cutoff = Utc::now() - ChronoDuration::hours(WINDOW_HOURS);
+struct WindowAccumulator {
+    total_input: u64,
+    total_output: u64,
+    oldest_ts: Option<DateTime<Utc>>,
+    active_sessions: HashSet<String>,
+    window_hours: i64,
+}
+
+impl WindowAccumulator {
+    fn new(window_hours: i64) -> Self {
+        Self {
+            total_input: 0,
+            total_output: 0,
+            oldest_ts: None,
+            active_sessions: HashSet::new(),
+            window_hours,
+        }
+    }
+
+    fn into_info(self) -> WindowInfo {
+        let tokens_used = self.total_input + self.total_output;
+        let (resets_at, minutes_until_reset) = if let Some(oldest) = self.oldest_ts {
+            let reset_time = oldest + ChronoDuration::hours(self.window_hours);
+            let now = Utc::now();
+            let minutes = if reset_time > now {
+                (reset_time - now).num_minutes() as u32
+            } else {
+                0
+            };
+            (Some(reset_time.to_rfc3339()), Some(minutes))
+        } else {
+            (None, None)
+        };
+
+        WindowInfo {
+            tokens_used,
+            input_tokens: self.total_input,
+            output_tokens: self.total_output,
+            sessions_active: self.active_sessions.len() as u32,
+            oldest_message_time: self.oldest_ts.map(|t| t.to_rfc3339()),
+            resets_at,
+            minutes_until_reset,
+            window_hours: self.window_hours as u32,
+        }
+    }
+}
+
+pub fn compute() -> RateLimitInfo {
+    let now = Utc::now();
+    let session_cutoff = now - ChronoDuration::hours(SESSION_HOURS);
+    let weekly_cutoff = now - ChronoDuration::hours(WEEKLY_HOURS);
 
     let claude_dir = match std::env::var("HOME") {
         Ok(home) => PathBuf::from(home).join(".claude").join("projects"),
@@ -58,12 +111,8 @@ pub fn compute() -> ContextWindowInfo {
         return empty_info();
     }
 
-    let mut total_input = 0u64;
-    let mut total_output = 0u64;
-    let mut total_cache_read = 0u64;
-    let mut total_cache_creation = 0u64;
-    let mut oldest_ts: Option<DateTime<Utc>> = None;
-    let mut active_sessions: HashSet<String> = HashSet::new();
+    let mut session = WindowAccumulator::new(SESSION_HOURS);
+    let mut weekly = WindowAccumulator::new(WEEKLY_HOURS);
 
     if let Ok(projects) = fs::read_dir(&claude_dir) {
         for project in projects.flatten() {
@@ -73,69 +122,37 @@ pub fn compute() -> ContextWindowInfo {
 
             scan_directory(
                 &project.path(),
-                &cutoff,
-                &mut total_input,
-                &mut total_output,
-                &mut total_cache_read,
-                &mut total_cache_creation,
-                &mut oldest_ts,
-                &mut active_sessions,
+                &session_cutoff,
+                &weekly_cutoff,
+                &mut session,
+                &mut weekly,
             );
 
             let subagents = project.path().join("subagents");
             if subagents.exists() {
                 scan_directory(
                     &subagents,
-                    &cutoff,
-                    &mut total_input,
-                    &mut total_output,
-                    &mut total_cache_read,
-                    &mut total_cache_creation,
-                    &mut oldest_ts,
-                    &mut active_sessions,
+                    &session_cutoff,
+                    &weekly_cutoff,
+                    &mut session,
+                    &mut weekly,
                 );
             }
         }
     }
 
-    let tokens_used = total_input + total_output;
-
-    let (resets_at, minutes_until_reset) = if let Some(oldest) = oldest_ts {
-        let reset_time = oldest + ChronoDuration::hours(WINDOW_HOURS);
-        let now = Utc::now();
-        let minutes = if reset_time > now {
-            (reset_time - now).num_minutes() as u32
-        } else {
-            0
-        };
-        (Some(reset_time.to_rfc3339()), Some(minutes))
-    } else {
-        (None, None)
-    };
-
-    ContextWindowInfo {
-        tokens_used,
-        input_tokens: total_input,
-        output_tokens: total_output,
-        cache_read_tokens: total_cache_read,
-        cache_creation_tokens: total_cache_creation,
-        sessions_active: active_sessions.len() as u32,
-        oldest_message_time: oldest_ts.map(|t| t.to_rfc3339()),
-        resets_at,
-        minutes_until_reset,
-        window_hours: WINDOW_HOURS as u32,
+    RateLimitInfo {
+        session: session.into_info(),
+        weekly: weekly.into_info(),
     }
 }
 
 fn scan_directory(
     dir: &Path,
-    cutoff: &DateTime<Utc>,
-    total_input: &mut u64,
-    total_output: &mut u64,
-    total_cache_read: &mut u64,
-    total_cache_creation: &mut u64,
-    oldest_ts: &mut Option<DateTime<Utc>>,
-    active_sessions: &mut HashSet<String>,
+    session_cutoff: &DateTime<Utc>,
+    weekly_cutoff: &DateTime<Utc>,
+    session: &mut WindowAccumulator,
+    weekly: &mut WindowAccumulator,
 ) {
     let entries = match fs::read_dir(dir) {
         Ok(e) => e,
@@ -145,39 +162,28 @@ fn scan_directory(
     for entry in entries.flatten() {
         let path = entry.path();
         if path.extension().map(|e| e == "jsonl").unwrap_or(false) {
-            // Skip files not modified in last 5 hours
+            // Skip files not modified in last 7 days
             if let Ok(metadata) = path.metadata() {
                 if let Ok(modified) = metadata.modified() {
-                    let threshold = SystemTime::now() - Duration::from_secs(5 * 3600);
+                    let threshold =
+                        SystemTime::now() - Duration::from_secs(WEEKLY_HOURS as u64 * 3600);
                     if modified < threshold {
                         continue;
                     }
                 }
             }
 
-            process_jsonl(
-                &path,
-                cutoff,
-                total_input,
-                total_output,
-                total_cache_read,
-                total_cache_creation,
-                oldest_ts,
-                active_sessions,
-            );
+            process_jsonl(&path, session_cutoff, weekly_cutoff, session, weekly);
         }
     }
 }
 
 fn process_jsonl(
     path: &Path,
-    cutoff: &DateTime<Utc>,
-    total_input: &mut u64,
-    total_output: &mut u64,
-    total_cache_read: &mut u64,
-    total_cache_creation: &mut u64,
-    oldest_ts: &mut Option<DateTime<Utc>>,
-    active_sessions: &mut HashSet<String>,
+    session_cutoff: &DateTime<Utc>,
+    weekly_cutoff: &DateTime<Utc>,
+    session: &mut WindowAccumulator,
+    weekly: &mut WindowAccumulator,
 ) {
     let content = match fs::read_to_string(path) {
         Ok(c) => c,
@@ -203,7 +209,8 @@ fn process_jsonl(
             None => continue,
         };
 
-        if ts < *cutoff {
+        // Skip if outside the wider (weekly) window entirely
+        if ts < *weekly_cutoff {
             continue;
         }
 
@@ -211,39 +218,59 @@ fn process_jsonl(
             if let Some(usage) = &message.usage {
                 let input = usage.input_tokens.unwrap_or(0);
                 let output = usage.output_tokens.unwrap_or(0);
-                let cache_read = usage.cache_read_input_tokens.unwrap_or(0);
-                let cache_creation = usage.cache_creation_input_tokens.unwrap_or(0);
+                let session_id = entry.session_id.as_deref();
 
-                *total_input += input;
-                *total_output += output;
-                *total_cache_read += cache_read;
-                *total_cache_creation += cache_creation;
-
-                match oldest_ts {
-                    Some(ref existing) if ts < *existing => *oldest_ts = Some(ts),
-                    None => *oldest_ts = Some(ts),
+                // Always add to weekly
+                weekly.total_input += input;
+                weekly.total_output += output;
+                match weekly.oldest_ts {
+                    Some(existing) if ts < existing => weekly.oldest_ts = Some(ts),
+                    None => weekly.oldest_ts = Some(ts),
                     _ => {}
                 }
+                if let Some(sid) = session_id {
+                    weekly.active_sessions.insert(sid.to_string());
+                }
 
-                if let Some(session_id) = &entry.session_id {
-                    active_sessions.insert(session_id.clone());
+                // Add to session if within 5h window
+                if ts >= *session_cutoff {
+                    session.total_input += input;
+                    session.total_output += output;
+                    match session.oldest_ts {
+                        Some(existing) if ts < existing => session.oldest_ts = Some(ts),
+                        None => session.oldest_ts = Some(ts),
+                        _ => {}
+                    }
+                    if let Some(sid) = session_id {
+                        session.active_sessions.insert(sid.to_string());
+                    }
                 }
             }
         }
     }
 }
 
-fn empty_info() -> ContextWindowInfo {
-    ContextWindowInfo {
-        tokens_used: 0,
-        input_tokens: 0,
-        output_tokens: 0,
-        cache_read_tokens: 0,
-        cache_creation_tokens: 0,
-        sessions_active: 0,
-        oldest_message_time: None,
-        resets_at: None,
-        minutes_until_reset: None,
-        window_hours: WINDOW_HOURS as u32,
+fn empty_info() -> RateLimitInfo {
+    RateLimitInfo {
+        session: WindowInfo {
+            tokens_used: 0,
+            input_tokens: 0,
+            output_tokens: 0,
+            sessions_active: 0,
+            oldest_message_time: None,
+            resets_at: None,
+            minutes_until_reset: None,
+            window_hours: SESSION_HOURS as u32,
+        },
+        weekly: WindowInfo {
+            tokens_used: 0,
+            input_tokens: 0,
+            output_tokens: 0,
+            sessions_active: 0,
+            oldest_message_time: None,
+            resets_at: None,
+            minutes_until_reset: None,
+            window_hours: WEEKLY_HOURS as u32,
+        },
     }
 }

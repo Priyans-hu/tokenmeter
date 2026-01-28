@@ -98,7 +98,7 @@ fn build_summary(
         .map(|d| d.total_cost)
         .sum();
 
-    let context_window = context_window::compute();
+    let rate_limits = context_window::compute();
     let last_updated = Local::now().format("%Y-%m-%dT%H:%M:%S").to_string();
 
     Ok(UsageSummary {
@@ -108,7 +108,7 @@ fn build_summary(
         month_cost,
         today_tokens,
         today_model_breakdowns,
-        context_window,
+        rate_limits,
         last_updated,
     })
 }

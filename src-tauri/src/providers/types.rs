@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::context_window::ContextWindowInfo;
+use crate::context_window::RateLimitInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +36,7 @@ pub struct UsageSummary {
     pub month_cost: f64,
     pub today_tokens: u64,
     pub today_model_breakdowns: Vec<ModelBreakdown>,
-    pub context_window: ContextWindowInfo,
+    pub rate_limits: RateLimitInfo,
     pub last_updated: String,
 }
 
