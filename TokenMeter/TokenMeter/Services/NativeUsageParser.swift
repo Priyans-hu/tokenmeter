@@ -6,18 +6,24 @@ struct ParseResult {
 }
 
 struct NativeUsageParser {
-    private let projectsDir: URL
+    private let projectsDirs: [URL]
 
     init() {
         let home = FileManager.default.homeDirectoryForCurrentUser
-        projectsDir = home.appendingPathComponent(".claude/projects")
+        projectsDirs = [
+            home.appendingPathComponent(".claude/projects"),
+            home.appendingPathComponent(".config/claude/projects"),
+        ]
     }
 
     func parse(days: Int = 30) -> ParseResult {
         let now = Date()
         let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: now)!
 
-        let entries = scanJSONLFiles(modifiedAfter: cutoff)
+        var entries: [ParsedEntry] = []
+        for dir in projectsDirs {
+            entries.append(contentsOf: scanJSONLFiles(in: dir, modifiedAfter: cutoff))
+        }
         let daily = aggregateDailyUsage(entries: entries, since: cutoff)
         let rateLimits = computeRateLimits(entries: entries, now: now)
 
@@ -26,12 +32,13 @@ struct NativeUsageParser {
 
     // MARK: - File Scanning
 
-    private func scanJSONLFiles(modifiedAfter: Date) -> [ParsedEntry] {
+    private func scanJSONLFiles(in dir: URL, modifiedAfter: Date) -> [ParsedEntry] {
         var entries: [ParsedEntry] = []
         let fm = FileManager.default
 
-        guard let enumerator = fm.enumerator(
-            at: projectsDir,
+        guard fm.fileExists(atPath: dir.path),
+              let enumerator = fm.enumerator(
+            at: dir,
             includingPropertiesForKeys: [.contentModificationDateKey],
             options: [.skipsHiddenFiles]
         ) else { return entries }
