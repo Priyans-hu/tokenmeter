@@ -6,6 +6,9 @@ use tauri::{
 };
 use tauri_plugin_opener::OpenerExt;
 
+#[cfg(target_os = "macos")]
+use objc::{msg_send, runtime::Object, sel, sel_impl};
+
 const TRAY_ICON: &[u8] = include_bytes!("../icons/32x32.png");
 
 pub fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -92,8 +95,31 @@ fn toggle_window(app: &AppHandle, tray_center_bottom: PhysicalPosition<f64>) {
             let _ = window.hide();
         } else {
             position_window_near_tray(&window, tray_center_bottom);
+            // Set window level to appear above fullscreen apps
+            #[cfg(target_os = "macos")]
+            set_window_level_for_fullscreen(&window);
             let _ = window.show();
             let _ = window.set_focus();
+        }
+    }
+}
+
+/// Set window level high enough to appear above fullscreen apps
+#[cfg(target_os = "macos")]
+fn set_window_level_for_fullscreen(window: &tauri::WebviewWindow) {
+    // NSWindowCollectionBehavior flags:
+    // CanJoinAllSpaces = 1 << 0 = 1
+    // MoveToActiveSpace = 1 << 1 = 2
+    // FullScreenAuxiliary = 1 << 8 = 256
+    const COLLECTION_BEHAVIOR: u64 = 1 | 2 | 256;
+
+    if let Ok(ns_win) = window.ns_window() {
+        let ns_window = ns_win as *mut Object;
+        unsafe {
+            // NSScreenSaverWindowLevel = 1000, highest level
+            let _: () = msg_send![ns_window, setLevel: 1000_i64];
+            // Allow window to appear on all spaces including fullscreen
+            let _: () = msg_send![ns_window, setCollectionBehavior: COLLECTION_BEHAVIOR];
         }
     }
 }

@@ -30,4 +30,6 @@ chrono = { version = "0.4", features = ["serde"] }
 which = "7"
 window-vibrancy = "0.5"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+cocoa = "0.26"
+objc = "0.2"
 
