@@ -3,11 +3,11 @@ import SwiftUI
 struct RateLimitView: View {
     let title: String
     let info: WindowInfo
-    let limit: UInt64
+    let outputLimit: UInt64
 
     private var percentage: Double {
-        guard limit > 0 else { return 0 }
-        return min(Double(info.tokensUsed) / Double(limit) * 100, 100)
+        guard outputLimit > 0 else { return 0 }
+        return min(Double(info.outputTokens) / Double(outputLimit) * 100, 100)
     }
 
     private var progressColor: Color {
@@ -47,11 +47,9 @@ struct RateLimitView: View {
             // Progress bar
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    // Background
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.gray.opacity(0.2))
 
-                    // Progress
                     RoundedRectangle(cornerRadius: 4)
                         .fill(progressColor)
                         .frame(width: geo.size.width * CGFloat(percentage / 100))
@@ -60,7 +58,7 @@ struct RateLimitView: View {
             .frame(height: 8)
 
             HStack {
-                Text(formatTokens(info.tokensUsed))
+                Text("\(formatTokens(info.outputTokens)) / \(formatTokens(outputLimit))")
                     .font(.caption2)
                     .fontWeight(.medium)
 
@@ -76,6 +74,10 @@ struct RateLimitView: View {
                         .foregroundColor(.secondary)
                 }
             }
+
+            Text("Output tokens (limits are estimates)")
+                .font(.system(size: 9))
+                .foregroundColor(.secondary.opacity(0.7))
         }
         .padding(10)
         .background(Color.gray.opacity(0.05))
@@ -84,11 +86,11 @@ struct RateLimitView: View {
 
     private func formatTokens(_ tokens: UInt64) -> String {
         if tokens >= 1_000_000 {
-            return String(format: "%.1fM tokens", Double(tokens) / 1_000_000)
+            return String(format: "%.1fM", Double(tokens) / 1_000_000)
         }
         if tokens >= 1_000 {
-            return String(format: "%.1fK tokens", Double(tokens) / 1_000)
+            return String(format: "%.1fK", Double(tokens) / 1_000)
         }
-        return "\(tokens) tokens"
+        return "\(tokens)"
     }
 }

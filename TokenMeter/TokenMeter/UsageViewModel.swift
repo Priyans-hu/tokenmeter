@@ -8,15 +8,20 @@ final class UsageViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var updateInfo: UpdateInfo?
     @Published var showSettings = false
+    @Published var selectedPlan: ClaudePlan {
+        didSet { UserDefaults.standard.set(selectedPlan.rawValue, forKey: "claudePlan") }
+    }
 
-    private let usageService = UsageService()
-    private let contextParser = ContextWindowParser()
+    private let parser = NativeUsageParser()
     private let updateChecker = UpdateChecker(currentVersion: Bundle.main.appVersion)
 
     private var refreshTimer: Timer?
-    private var refreshInterval: TimeInterval = 300 // 5 minutes
+    private var refreshInterval: TimeInterval = 300
 
     init() {
+        let planStr = UserDefaults.standard.string(forKey: "claudePlan") ?? "pro"
+        selectedPlan = ClaudePlan(rawValue: planStr) ?? .pro
+
         loadCachedData()
         Task {
             await refresh()
@@ -29,26 +34,13 @@ final class UsageViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        do {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyyMMdd"
+        let result = await Task.detached { [parser] in
+            parser.parse(days: 30)
+        }.value
 
-            let until = Date()
-            let since = Calendar.current.date(byAdding: .day, value: -30, to: until)!
-
-            let sinceStr = formatter.string(from: since)
-            let untilStr = formatter.string(from: until)
-
-            let daily = try await usageService.fetchDaily(since: sinceStr, until: untilStr)
-            let rateLimits = contextParser.parse()
-
-            let summary = aggregateSummary(daily: daily, rateLimits: rateLimits)
-            self.summary = summary
-            saveCachedData(summary)
-
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        let summary = aggregateSummary(daily: result.daily, rateLimits: result.rateLimits)
+        self.summary = summary
+        saveCachedData(summary)
 
         isLoading = false
     }
@@ -68,27 +60,24 @@ final class UsageViewModel: ObservableObject {
         formatter.dateFormat = "yyyy-MM-dd"
         let todayStr = formatter.string(from: Date())
 
-        // Today's data
         let today = daily.first { $0.date == todayStr }
         let todayCost = today?.totalCost ?? 0
         let todayTokens = today?.totalTokens ?? 0
         let todayBreakdowns = today?.modelBreakdowns ?? []
 
-        // Week cost (last 7 days)
         let calendar = Calendar.current
         let weekStart = calendar.date(byAdding: .day, value: -6, to: Date())!
         let weekCost = daily
-            .filter { dateString in
-                guard let date = formatter.date(from: dateString.date) else { return false }
+            .filter { item in
+                guard let date = formatter.date(from: item.date) else { return false }
                 return date >= weekStart
             }
             .reduce(0.0) { $0 + $1.totalCost }
 
-        // Month cost (from 1st of month)
         let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: Date()))!
         let monthCost = daily
-            .filter { dateString in
-                guard let date = formatter.date(from: dateString.date) else { return false }
+            .filter { item in
+                guard let date = formatter.date(from: item.date) else { return false }
                 return date >= monthStart
             }
             .reduce(0.0) { $0 + $1.totalCost }

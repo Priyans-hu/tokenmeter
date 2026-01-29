@@ -10,6 +10,28 @@ struct SettingsView: View {
             Text("Settings")
                 .font(.headline)
 
+            // Plan Selection
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Claude Plan")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Picker("Plan", selection: $viewModel.selectedPlan) {
+                    ForEach(ClaudePlan.allCases, id: \.self) { plan in
+                        Text(plan.displayName).tag(plan)
+                    }
+                }
+                .pickerStyle(.radioGroup)
+                .labelsHidden()
+
+                Text("Rate limit estimates are based on your plan")
+                    .font(.system(size: 9))
+                    .foregroundColor(.secondary.opacity(0.7))
+            }
+
+            Divider()
+
+            // Refresh Interval
             VStack(alignment: .leading, spacing: 8) {
                 Text("Refresh Interval")
                     .font(.caption)
@@ -27,6 +49,7 @@ struct SettingsView: View {
 
             Divider()
 
+            // About
             VStack(alignment: .leading, spacing: 8) {
                 Text("About")
                     .font(.caption)

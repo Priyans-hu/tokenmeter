@@ -53,7 +53,4 @@ xattr -rd com.apple.quarantine "${INSTALL_DIR}/${APP_NAME}.app" 2>/dev/null || t
 echo ""
 echo "${APP_NAME} ${VERSION} installed successfully!"
 echo ""
-echo "Prerequisites:"
-echo "  npm install -g ccusage"
-echo ""
 echo "Launch from Applications or Spotlight."

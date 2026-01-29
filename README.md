@@ -1,23 +1,23 @@
 # TokenMeter
 
-macOS menu bar app for visualizing Claude Code token usage and costs. Built with Tauri v2 (Rust + vanilla JS).
+macOS menu bar app for visualizing Claude Code token usage and costs. Built with SwiftUI.
 
-Parses Claude Code's local conversation data to show real-time usage stats — no API keys needed.
+Parses Claude Code's local conversation data to show real-time usage stats — no API keys or external tools needed.
 
-![macOS](https://img.shields.io/badge/macOS-000?logo=apple&logoColor=white)
-![Tauri](https://img.shields.io/badge/Tauri_v2-FFC131?logo=tauri&logoColor=white)
-![Rust](https://img.shields.io/badge/Rust-000?logo=rust&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS_14+-000?logo=apple&logoColor=white)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-007AFF?logo=swift&logoColor=white)
 
 ## Features
 
-- **System tray app** — lives in menu bar, no dock icon
-- **Native macOS vibrancy** — frosted glass popover appearance
-- **Context window tracker** — 5-hour sliding window with token count, active sessions, and reset timer
-- **Cost summary** — today / this week / this month
+- **Menu bar app** — lives in menu bar, no dock icon, works in fullscreen
+- **Native macOS** — built with SwiftUI and Swift Charts
+- **Rate limit tracking** — 5-hour session and weekly output token usage with plan-based limits
+- **Cost summary** — today / this week / this month (calculated with embedded pricing)
 - **Daily cost chart** — bar chart with 7/14/30 day range
 - **Model breakdown** — donut chart showing per-model usage (Opus, Sonnet, Haiku)
+- **Plan selection** — Pro / Max 5x / Max 20x for estimated rate limits
 - **Auto-refresh** — every 5 minutes (configurable)
-- **Instant reopen** — cached data persists across restarts
+- **Zero dependencies** — parses `~/.claude/` JSONL files directly, no external tools required
 
 ## Installation
 
@@ -29,6 +29,12 @@ curl -fsSL https://raw.githubusercontent.com/Priyans-hu/tokenmeter/main/install.
 
 Downloads the latest release, extracts to `/Applications`, and removes quarantine.
 
+### Homebrew
+
+```bash
+brew install Priyans-hu/tap/tokenmeter
+```
+
 ### Manual Download
 
 1. Download `TokenMeter-v*.zip` from [Releases](https://github.com/Priyans-hu/tokenmeter/releases/latest)
@@ -39,96 +45,71 @@ Downloads the latest release, extracts to `/Applications`, and removes quarantin
 
 ```bash
 git clone https://github.com/Priyans-hu/tokenmeter.git
-cd tokenmeter
-npm install
-npm run tauri build -- --bundles app
+cd tokenmeter/TokenMeter
+swift build -c release
 ```
 
-Output: `src-tauri/target/release/bundle/macos/TokenMeter.app`
+Then copy the binary into the app bundle:
+
+```bash
+cp .build/release/TokenMeter /Applications/TokenMeter.app/Contents/MacOS/TokenMeter
+```
 
 ### Prerequisites
 
-Before running TokenMeter, install:
-
-- [ccusage](https://github.com/yucchiy/ccusage): `npm install -g ccusage`
+- macOS 14 (Sonoma) or later
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and used (generates the local data TokenMeter reads)
 
 ## How It Works
 
-TokenMeter reads Claude Code's local data from two sources:
+TokenMeter reads Claude Code's local JSONL files from `~/.claude/projects/`:
 
-1. **[ccusage](https://github.com/yucchiy/ccusage)** — for daily cost and token aggregates
-2. **`~/.claude/projects/` JSONL files** — for 5-hour context window tracking (parses `message.usage` from conversation logs)
+1. **Daily usage** — scans all conversation JSONL files, groups by date, calculates token costs using embedded model pricing
+2. **Rate limits** — tracks output tokens in the last 5 hours (session) and 7 days (weekly), shows progress against estimated plan limits
+3. **Model breakdown** — identifies which models (Opus, Sonnet, Haiku) are being used and their relative costs
 
-No API keys or cloud services required. Everything is local.
+No API keys, no external tools, no cloud services. Everything is local.
 
-## Development
+### Pricing
 
-```bash
-npm install
-npm run tauri dev
-```
+Costs are calculated using Anthropic's published API-equivalent pricing (per million tokens):
 
-Requires [Rust](https://rustup.rs/) and Node.js.
+| Model | Input | Output | Cache Write | Cache Read |
+|-------|-------|--------|-------------|------------|
+| Opus 4.5 | $5.00 | $25.00 | $6.25 | $0.50 |
+| Opus 4 / 4.1 | $15.00 | $75.00 | $18.75 | $1.50 |
+| Sonnet 4.5 | $3.00 | $15.00 | $3.75 | $0.30 |
+| Haiku 4.5 | $1.00 | $5.00 | $1.25 | $0.10 |
+
+> Note: These are API-equivalent costs for reference. Claude Code subscription users pay a flat monthly fee.
 
 ## Architecture
 
 ```
-Data Sources:
-  ccusage CLI --json  ──>  CcusageProvider  ──>  Daily cost/tokens
-  ~/.claude/projects/  ──>  context_window   ──>  5h token tracking
-
-Pipeline:
-  Scheduler (5min)  ──>  UsageSummary cache  ──>  Tauri event  ──>  Frontend
-                         |
-                         └──>  Persisted to store (instant reopen)
-
-UI:
-  System Tray  ──>  Click  ──>  Popover (positioned below icon)
-                                 ├── Stats cards (today/week/month)
-                                 ├── Context window (5h progress bar)
-                                 ├── Daily cost chart
-                                 ├── Model breakdown donut
-                                 └── Settings
+TokenMeter/
+├── TokenMeterApp.swift              # App entry with MenuBarExtra
+├── UsageViewModel.swift             # State management, timer, caching
+├── Models/
+│   └── UsageSummary.swift           # Data models + ClaudePlan enum
+├── Services/
+│   ├── NativeUsageParser.swift      # JSONL parser + pricing engine
+│   └── UpdateChecker.swift          # GitHub releases checker
+└── Views/
+    ├── DashboardView.swift          # Main popover container
+    ├── RateLimitView.swift          # Progress bar with plan limits
+    ├── CostSummaryView.swift        # Today/week/month cost cards
+    ├── DailyChartView.swift         # Swift Charts bar chart
+    ├── ModelBreakdownView.swift     # Swift Charts donut chart
+    └── SettingsView.swift           # Plan picker, refresh interval
 ```
 
-### Provider Trait
-
-Extensible provider architecture for adding other AI services:
-
-```rust
-pub trait UsageProvider: Send + Sync {
-    fn name(&self) -> &str;
-    fn fetch_daily(&self, since: &str, until: &str) -> Result<Vec<DailyUsage>, ProviderError>;
-}
 ```
-
-Add new providers in `src-tauri/src/providers/`.
-
-## Project Structure
-
-```
-tokenmeter/
-├── src/                          # Frontend (vanilla JS)
-│   ├── index.html
-│   ├── main.js
-│   └── styles.css
-├── src-tauri/                    # Rust backend
-│   ├── src/
-│   │   ├── lib.rs                # App entry, vibrancy, single-instance
-│   │   ├── tray.rs               # System tray, window positioning
-│   │   ├── scheduler.rs          # Auto-refresh loop
-│   │   ├── commands.rs           # Tauri IPC commands
-│   │   ├── state.rs              # App state (cached data)
-│   │   ├── context_window.rs     # 5h context window parser
-│   │   └── providers/
-│   │       ├── mod.rs            # UsageProvider trait
-│   │       ├── types.rs          # Data types
-│   │       └── ccusage.rs        # ccusage CLI provider
-│   ├── icons/
-│   ├── Cargo.toml
-│   └── tauri.conf.json
-└── package.json
+Data Flow:
+  ~/.claude/projects/*.jsonl  ──>  NativeUsageParser  ──>  DailyUsage + RateLimits
+                                        │
+  Timer (5min)  ──>  UsageViewModel  ──>  UsageSummary  ──>  SwiftUI Views
+                          │
+                          └──>  UserDefaults cache (instant reopen)
 ```
 
 ## License
