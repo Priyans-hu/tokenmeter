@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Build release binary
+        run: |
+          cd TokenMeter
+          swift build -c release
+
+      - name: Create app bundle
+        run: |
+          APP="TokenMeter.app"
+          mkdir -p "${APP}/Contents/MacOS"
+          mkdir -p "${APP}/Contents/Resources"
+
+          cp TokenMeter/.build/release/TokenMeter "${APP}/Contents/MacOS/"
+
+          # Copy icon if present
+          if [ -f TokenMeter/TokenMeter/Resources/AppIcon.icns ]; then
+            cp TokenMeter/TokenMeter/Resources/AppIcon.icns "${APP}/Contents/Resources/"
+          fi
+
+          # Generate Info.plist
+          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${VERSION#v}"
+          cat > "${APP}/Contents/Info.plist" << PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>TokenMeter</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.tokenmeter.app</string>
+              <key>CFBundleName</key>
+              <string>TokenMeter</string>
+              <key>CFBundleDisplayName</key>
+              <string>TokenMeter</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${VERSION}</string>
+              <key>CFBundleVersion</key>
+              <string>${VERSION}</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleIconFile</key>
+              <string>AppIcon</string>
+              <key>LSUIElement</key>
+              <true/>
+              <key>LSMinimumSystemVersion</key>
+              <string>14.0</string>
+          </dict>
+          </plist>
+          PLIST
+
+      - name: Ad-hoc code sign
+        run: |
+          codesign --force --deep --sign - TokenMeter.app
+
+      - name: Verify signature
+        run: |
+          codesign -dv --verbose=4 TokenMeter.app
+
+      - name: Create zip
+        run: |
+          ditto -c -k --keepParent TokenMeter.app TokenMeter-${{ steps.version.outputs.version }}-macos.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: TokenMeter-${{ steps.version.outputs.version }}-macos.zip
+          generate_release_notes: true

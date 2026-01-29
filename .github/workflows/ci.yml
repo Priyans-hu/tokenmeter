@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          cd TokenMeter
+          swift build -c release
+
+      - name: Verify binary
+        run: |
+          test -f TokenMeter/.build/release/TokenMeter
+          file TokenMeter/.build/release/TokenMeter
