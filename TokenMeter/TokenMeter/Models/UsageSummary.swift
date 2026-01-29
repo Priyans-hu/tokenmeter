@@ -53,6 +53,8 @@ struct ModelBreakdown: Codable, Identifiable {
 struct RateLimitInfo: Codable {
     let session: WindowInfo
     let weekly: WindowInfo
+    var apiSession: APIWindowUtilization?
+    var apiWeekly: APIWindowUtilization?
 }
 
 struct WindowInfo: Codable {

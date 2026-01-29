@@ -13,6 +13,7 @@ final class UsageViewModel: ObservableObject {
     }
 
     private let parser = NativeUsageParser()
+    private let apiService = UsageAPIService()
     private let updateChecker = UpdateChecker(currentVersion: Bundle.main.appVersion)
 
     private var refreshTimer: Timer?
@@ -34,11 +35,19 @@ final class UsageViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        let result = await Task.detached { [parser] in
+        async let localResult = Task.detached { [parser] in
             parser.parse(days: 30)
         }.value
+        async let apiResult = apiService.fetchUsage()
 
-        let summary = aggregateSummary(daily: result.daily, rateLimits: result.rateLimits)
+        let result = await localResult
+        let apiUsage = await apiResult
+
+        var rateLimits = result.rateLimits
+        rateLimits.apiSession = apiUsage?.fiveHour
+        rateLimits.apiWeekly = apiUsage?.sevenDay
+
+        let summary = aggregateSummary(daily: result.daily, rateLimits: rateLimits)
         self.summary = summary
         saveCachedData(summary)
 

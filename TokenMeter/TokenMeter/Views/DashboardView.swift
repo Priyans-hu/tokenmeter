@@ -30,13 +30,15 @@ struct DashboardView: View {
                             RateLimitView(
                                 title: "5-Hour Session",
                                 info: summary.rateLimits.session,
-                                outputLimit: viewModel.selectedPlan.sessionOutputLimit
+                                outputLimit: viewModel.selectedPlan.sessionOutputLimit,
+                                apiUtilization: summary.rateLimits.apiSession
                             )
 
                             RateLimitView(
                                 title: "Weekly (7 days)",
                                 info: summary.rateLimits.weekly,
-                                outputLimit: viewModel.selectedPlan.weeklyOutputLimit
+                                outputLimit: viewModel.selectedPlan.weeklyOutputLimit,
+                                apiUtilization: summary.rateLimits.apiWeekly
                             )
 
                             Divider()

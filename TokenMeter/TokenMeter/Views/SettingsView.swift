@@ -24,7 +24,7 @@ struct SettingsView: View {
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
 
-                Text("Rate limit estimates are based on your plan")
+                Text("Used when API data is unavailable")
                     .font(.system(size: 9))
                     .foregroundColor(.secondary.opacity(0.7))
             }
