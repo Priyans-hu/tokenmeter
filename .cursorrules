@@ -1,0 +1,31 @@
+You are working on TokenMeter, a macOS menu bar app for tracking Claude Code usage.
+
+## Tech Stack
+- Swift 5.9+, SwiftUI, macOS 14+
+- Swift Package Manager (no Xcode project)
+- Swift Concurrency (async/await, actors, @MainActor)
+
+## Build
+cd TokenMeter && swift build -c release
+
+## Key Files
+- TokenMeterApp.swift — MenuBarExtra app entry
+- UsageViewModel.swift — @MainActor ObservableObject, state management
+- Services/NativeUsageParser.swift — JSONL parser for ~/.claude/projects/
+- Services/UsageAPIService.swift — Keychain reader + Anthropic API client
+- Models/UsageSummary.swift — All data models and ClaudePlan enum
+- Views/ — SwiftUI views (dashboard, rate limits, heatmap, charts, settings)
+
+## Patterns
+- UsageAPIService is an actor (thread-safe)
+- UsageViewModel is @MainActor (UI-bound)
+- API + local JSONL parsing run concurrently via async let
+- API data preferred for rate limits, local JSONL for costs/breakdowns
+- UserDefaults for caching and settings persistence
+- UNUserNotificationCenter for rate limit alerts
+
+## Guidelines
+- Keep the app lightweight — it runs in the menu bar
+- No Xcode project files — use SPM only
+- macOS 14+ minimum (for MenuBarExtra)
+- Verify changes compile: swift build -c release
