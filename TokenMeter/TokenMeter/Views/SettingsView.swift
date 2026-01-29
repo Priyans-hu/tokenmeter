@@ -31,6 +31,18 @@ struct SettingsView: View {
 
             Divider()
 
+            // Notifications
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Notifications")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Toggle("Alert at 80% rate limit", isOn: $viewModel.notificationsEnabled)
+                    .font(.caption)
+            }
+
+            Divider()
+
             // Refresh Interval
             VStack(alignment: .leading, spacing: 8) {
                 Text("Refresh Interval")

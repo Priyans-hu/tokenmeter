@@ -2,6 +2,7 @@ import Foundation
 
 struct UsageSummary: Codable {
     let daily: [DailyUsage]
+    let hourly: [HourlyUsage]
     let todayCost: Double
     let weekCost: Double
     let monthCost: Double
@@ -66,6 +67,17 @@ struct WindowInfo: Codable {
     let resetsAt: String?
     let minutesUntilReset: UInt32?
     let windowHours: UInt32
+}
+
+// MARK: - Hourly Usage (for heatmap)
+
+struct HourlyUsage: Codable, Identifiable {
+    var id: String { "\(date)-\(hour)" }
+
+    let date: String    // yyyy-MM-dd
+    let hour: Int       // 0-23
+    let outputTokens: UInt64
+    let requestCount: Int
 }
 
 // MARK: - Claude Plan

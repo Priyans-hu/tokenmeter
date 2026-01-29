@@ -2,6 +2,7 @@ import Foundation
 
 struct ParseResult {
     let daily: [DailyUsage]
+    let hourly: [HourlyUsage]
     let rateLimits: RateLimitInfo
 }
 
@@ -30,9 +31,10 @@ struct NativeUsageParser {
         let entries = deduplicateByRequestId(rawEntries)
 
         let daily = aggregateDailyUsage(entries: entries, since: cutoff)
+        let hourly = aggregateHourlyUsage(entries: entries, since: cutoff)
         let rateLimits = computeRateLimits(entries: entries, now: now)
 
-        return ParseResult(daily: daily, rateLimits: rateLimits)
+        return ParseResult(daily: daily, hourly: hourly, rateLimits: rateLimits)
     }
 
     // MARK: - File Scanning
@@ -179,6 +181,36 @@ struct NativeUsageParser {
                 modelBreakdowns: modelBreakdowns
             )
         }.sorted { $0.date < $1.date }
+    }
+
+    // MARK: - Hourly Aggregation
+
+    private func aggregateHourlyUsage(entries: [ParsedEntry], since: Date) -> [HourlyUsage] {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let calendar = Calendar.current
+
+        // key = "yyyy-MM-dd-HH"
+        var hourMap: [String: (outputTokens: UInt64, requestCount: Int)] = [:]
+
+        for entry in entries {
+            guard entry.timestamp >= since else { continue }
+            let dateStr = dateFormatter.string(from: entry.timestamp)
+            let hour = calendar.component(.hour, from: entry.timestamp)
+            let key = "\(dateStr)-\(hour)"
+
+            var acc = hourMap[key] ?? (outputTokens: 0, requestCount: 0)
+            acc.outputTokens += entry.outputTokens
+            acc.requestCount += 1
+            hourMap[key] = acc
+        }
+
+        return hourMap.map { (key, acc) in
+            let parts = key.split(separator: "-")
+            let date = parts.prefix(3).joined(separator: "-")
+            let hour = Int(parts.last!) ?? 0
+            return HourlyUsage(date: date, hour: hour, outputTokens: acc.outputTokens, requestCount: acc.requestCount)
+        }.sorted { $0.date == $1.date ? $0.hour < $1.hour : $0.date < $1.date }
     }
 
     // MARK: - Rate Limits
