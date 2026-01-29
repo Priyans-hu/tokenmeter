@@ -9,6 +9,8 @@ Reads Claude Code's OAuth token from Keychain for real rate limit data, and pars
 ![Downloads](https://img.shields.io/github/downloads/Priyans-hu/tokenmeter/total)
 ![License](https://img.shields.io/github/license/Priyans-hu/tokenmeter)
 
+> If you find this useful, consider giving it a [⭐ star on GitHub](https://github.com/Priyans-hu/tokenmeter) — it helps others discover the project!
+
 ## Features
 
 - **Real rate limits** — fetches actual utilization from Anthropic API via Claude Code's OAuth token
