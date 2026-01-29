@@ -22,13 +22,17 @@ Reads Claude Code's OAuth token from Keychain for real rate limit data, and pars
 
 ## Installation
 
-### Quick Install (recommended)
+### Homebrew (recommended)
+
+```bash
+brew install Priyans-hu/tap/tokenmeter
+```
+
+### Quick Install
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Priyans-hu/tokenmeter/main/install.sh | bash
 ```
-
-Downloads the latest release, extracts to `/Applications`, and removes quarantine.
 
 ### Manual Download
 

@@ -15,7 +15,10 @@ jobs:
 
       - name: Extract version
         id: version
-        run: echo "version=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "number=${TAG#v}" >> "$GITHUB_OUTPUT"
 
       - name: Build release binary
         run: |
@@ -36,8 +39,7 @@ jobs:
           fi
 
           # Generate Info.plist
-          VERSION="${{ steps.version.outputs.version }}"
-          VERSION="${VERSION#v}"
+          VERSION="${{ steps.version.outputs.number }}"
           cat > "${APP}/Contents/Info.plist" << PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -76,11 +78,63 @@ jobs:
           codesign -dv --verbose=4 TokenMeter.app
 
       - name: Create zip
+        env:
+          ZIP_NAME: TokenMeter-${{ steps.version.outputs.tag }}-macos-aarch64.zip
         run: |
-          ditto -c -k --keepParent TokenMeter.app TokenMeter-${{ steps.version.outputs.version }}-macos.zip
+          ditto -c -k --keepParent TokenMeter.app "$ZIP_NAME"
+          shasum -a 256 "$ZIP_NAME" | awk '{print $1}' > sha256.txt
+          echo "SHA256: $(cat sha256.txt)"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: TokenMeter-${{ steps.version.outputs.version }}-macos.zip
+          files: TokenMeter-${{ steps.version.outputs.tag }}-macos-aarch64.zip
           generate_release_notes: true
+
+      - name: Update Homebrew cask
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.number }}"
+          SHA256=$(cat sha256.txt)
+          TAG="${{ steps.version.outputs.tag }}"
+
+          CASK_CONTENT=$(cat <<RUBY
+          cask "tokenmeter" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/Priyans-hu/tokenmeter/releases/download/${TAG}/TokenMeter-${TAG}-macos-aarch64.zip"
+            name "TokenMeter"
+            desc "macOS menu bar app for tracking Claude Code usage, rate limits, and costs"
+            homepage "https://github.com/Priyans-hu/tokenmeter"
+
+            depends_on macos: ">= :sonoma"
+
+            app "TokenMeter.app"
+
+            postflight do
+              system_command "/usr/bin/xattr",
+                             args: ["-cr", "#{appdir}/TokenMeter.app"],
+                             sudo: false
+            end
+
+            zap trash: [
+              "~/Library/Application Support/com.priyanshugarg.tokenmeter",
+            ]
+          end
+          RUBY
+          )
+
+          # Get current file SHA from homebrew-tap repo
+          FILE_SHA=$(gh api repos/Priyans-hu/homebrew-tap/contents/Casks/tokenmeter.rb --jq '.sha')
+
+          # Update the cask file
+          echo "$CASK_CONTENT" | gh api repos/Priyans-hu/homebrew-tap/contents/Casks/tokenmeter.rb \
+            -X PUT \
+            -f message="Update tokenmeter to ${TAG}" \
+            -f content="$(echo "$CASK_CONTENT" | base64)" \
+            -f sha="$FILE_SHA" \
+            --silent
+
+          echo "Homebrew cask updated to ${TAG}"
