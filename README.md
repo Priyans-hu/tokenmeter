@@ -30,17 +30,11 @@ curl -fsSL https://raw.githubusercontent.com/Priyans-hu/tokenmeter/main/install.
 
 Downloads the latest release, extracts to `/Applications`, and removes quarantine.
 
-### Homebrew
-
-```bash
-brew install Priyans-hu/tap/tokenmeter
-```
-
 ### Manual Download
 
 1. Download `TokenMeter-v*.zip` from [Releases](https://github.com/Priyans-hu/tokenmeter/releases/latest)
 2. Extract and move `TokenMeter.app` to `/Applications`
-3. Right-click → Open on first launch (to bypass Gatekeeper)
+3. If you see "damaged" error, run: `xattr -cr /Applications/TokenMeter.app`
 
 ### Build from Source
 
@@ -129,4 +123,7 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+1. Fork and clone the repo
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Build: `cd TokenMeter && swift build -c release`
+4. Submit a PR to `main`
