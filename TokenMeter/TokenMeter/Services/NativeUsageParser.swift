@@ -20,10 +20,15 @@ struct NativeUsageParser {
         let now = Date()
         let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: now)!
 
-        var entries: [ParsedEntry] = []
+        var rawEntries: [ParsedEntry] = []
         for dir in projectsDirs {
-            entries.append(contentsOf: scanJSONLFiles(in: dir, modifiedAfter: cutoff))
+            rawEntries.append(contentsOf: scanJSONLFiles(in: dir, modifiedAfter: cutoff))
         }
+
+        // Deduplicate by requestId — Claude Code writes multiple JSONL lines
+        // per API request (one per content block), all with identical usage data.
+        let entries = deduplicateByRequestId(rawEntries)
+
         let daily = aggregateDailyUsage(entries: entries, since: cutoff)
         let rateLimits = computeRateLimits(entries: entries, now: now)
 
@@ -72,11 +77,13 @@ struct NativeUsageParser {
                   raw.type == "assistant",
                   let usage = raw.message?.usage,
                   let model = raw.message?.model,
+                  model != "<synthetic>",
                   let timestamp = raw.parsedTimestamp else { continue }
 
             entries.append(ParsedEntry(
                 timestamp: timestamp,
                 sessionId: raw.sessionId,
+                requestId: raw.requestId,
                 model: model,
                 inputTokens: UInt64(usage.inputTokens ?? 0),
                 outputTokens: UInt64(usage.outputTokens ?? 0),
@@ -86,6 +93,25 @@ struct NativeUsageParser {
         }
 
         return entries
+    }
+
+    // MARK: - Deduplication
+
+    private func deduplicateByRequestId(_ entries: [ParsedEntry]) -> [ParsedEntry] {
+        var seen = Set<String>()
+        var result: [ParsedEntry] = []
+
+        for entry in entries {
+            guard let rid = entry.requestId else {
+                result.append(entry)
+                continue
+            }
+            if seen.insert(rid).inserted {
+                result.append(entry)
+            }
+        }
+
+        return result
     }
 
     // MARK: - Daily Aggregation
@@ -221,6 +247,7 @@ struct NativeUsageParser {
 private struct ParsedEntry {
     let timestamp: Date
     let sessionId: String?
+    let requestId: String?
     let model: String
     let inputTokens: UInt64
     let outputTokens: UInt64
@@ -250,6 +277,7 @@ private struct RawJournalEntry: Codable {
     let type: String?
     let timestamp: String?
     let sessionId: String?
+    let requestId: String?
     let message: RawJournalMessage?
 
     var parsedTimestamp: Date? {
@@ -281,7 +309,7 @@ private struct RawJournalUsage: Codable {
     }
 }
 
-// MARK: - Pricing (per million tokens)
+// MARK: - Pricing (per million tokens, from LiteLLM)
 
 struct TokenPricing {
     let input: Double
@@ -296,14 +324,19 @@ struct TokenPricing {
 
     static func forModel(_ id: String) -> TokenPricing {
         let lower = id.lowercased()
+        if lower.contains("opus-4-5") || lower.contains("opus-4.5") {
+            // Opus 4.5: $5/$25/MTok (cheaper than Opus 4/3)
+            return TokenPricing(input: 5.0, output: 25.0, cacheCreation: 6.25, cacheRead: 0.50)
+        }
         if lower.contains("opus") {
+            // Opus 4 / 4.1 / 3: $15/$75/MTok
             return TokenPricing(input: 15.0, output: 75.0, cacheCreation: 18.75, cacheRead: 1.50)
         }
         if lower.contains("sonnet") {
             return TokenPricing(input: 3.0, output: 15.0, cacheCreation: 3.75, cacheRead: 0.30)
         }
         if lower.contains("haiku") {
-            return TokenPricing(input: 0.80, output: 4.0, cacheCreation: 1.0, cacheRead: 0.08)
+            return TokenPricing(input: 1.0, output: 5.0, cacheCreation: 1.25, cacheRead: 0.10)
         }
         // Default to Sonnet pricing
         return TokenPricing(input: 3.0, output: 15.0, cacheCreation: 3.75, cacheRead: 0.30)

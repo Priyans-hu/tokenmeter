@@ -84,18 +84,18 @@ enum ClaudePlan: String, CaseIterable, Codable {
     // Approximate output token limits per 5-hour window (community estimates)
     var sessionOutputLimit: UInt64 {
         switch self {
-        case .pro: return 45_000
-        case .max5: return 225_000
-        case .max20: return 900_000
+        case .pro: return 200_000
+        case .max5: return 1_000_000
+        case .max20: return 4_000_000
         }
     }
 
     // Approximate output token limits per 7-day window (community estimates)
     var weeklyOutputLimit: UInt64 {
         switch self {
-        case .pro: return 500_000
-        case .max5: return 2_500_000
-        case .max20: return 10_000_000
+        case .pro: return 2_000_000
+        case .max5: return 10_000_000
+        case .max20: return 40_000_000
         }
     }
 }

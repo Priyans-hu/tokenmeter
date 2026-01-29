@@ -76,9 +76,10 @@ Costs are calculated using Anthropic's published API-equivalent pricing (per mil
 
 | Model | Input | Output | Cache Write | Cache Read |
 |-------|-------|--------|-------------|------------|
-| Opus 4.5 | $15.00 | $75.00 | $18.75 | $1.50 |
+| Opus 4.5 | $5.00 | $25.00 | $6.25 | $0.50 |
+| Opus 4 / 4.1 | $15.00 | $75.00 | $18.75 | $1.50 |
 | Sonnet 4.5 | $3.00 | $15.00 | $3.75 | $0.30 |
-| Haiku 4.5 | $0.80 | $4.00 | $1.00 | $0.08 |
+| Haiku 4.5 | $1.00 | $5.00 | $1.25 | $0.10 |
 
 > Note: These are API-equivalent costs for reference. Claude Code subscription users pay a flat monthly fee.
 
