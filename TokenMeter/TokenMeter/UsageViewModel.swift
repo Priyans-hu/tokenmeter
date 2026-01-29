@@ -12,6 +12,7 @@ final class UsageViewModel: ObservableObject {
     @Published var selectedPlan: ClaudePlan {
         didSet { UserDefaults.standard.set(selectedPlan.rawValue, forKey: "claudePlan") }
     }
+    @Published var planAutoDetected = false
 
     private let parser = NativeUsageParser()
     private let apiService = UsageAPIService()
@@ -34,6 +35,7 @@ final class UsageViewModel: ObservableObject {
         loadCachedData()
         requestNotificationPermission()
         Task {
+            await detectPlan()
             await refresh()
             await checkForUpdates()
         }
@@ -70,6 +72,13 @@ final class UsageViewModel: ObservableObject {
 
     func dismissUpdate() {
         updateInfo = nil
+    }
+
+    private func detectPlan() async {
+        guard let meta = await apiService.readCredentialMeta(),
+              let plan = meta.detectedPlan else { return }
+        selectedPlan = plan
+        planAutoDetected = true
     }
 
     // MARK: - Private

@@ -12,9 +12,17 @@ struct SettingsView: View {
 
             // Plan Selection
             VStack(alignment: .leading, spacing: 8) {
-                Text("Claude Plan")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack {
+                    Text("Claude Plan")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    if viewModel.planAutoDetected {
+                        Text("(auto-detected)")
+                            .font(.system(size: 9))
+                            .foregroundColor(.green)
+                    }
+                }
 
                 Picker("Plan", selection: $viewModel.selectedPlan) {
                     ForEach(ClaudePlan.allCases, id: \.self) { plan in
@@ -24,7 +32,7 @@ struct SettingsView: View {
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
 
-                Text("Used when API data is unavailable")
+                Text("Fallback for when API is unavailable")
                     .font(.system(size: 9))
                     .foregroundColor(.secondary.opacity(0.7))
             }

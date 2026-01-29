@@ -23,6 +23,20 @@ struct APIWindowUtilization: Codable {
     }
 }
 
+struct CredentialMeta {
+    let rateLimitTier: String?
+    let subscriptionType: String?
+
+    var detectedPlan: ClaudePlan? {
+        guard let tier = rateLimitTier else { return nil }
+        if tier.contains("max_20x") { return .max20 }
+        if tier.contains("max_5x") { return .max5 }
+        if tier.contains("max") { return .max5 }
+        if tier.contains("pro") { return .pro }
+        return nil
+    }
+}
+
 actor UsageAPIService {
     private let endpoint = URL(string: "https://api.anthropic.com/api/oauth/usage")!
 
@@ -47,9 +61,16 @@ actor UsageAPIService {
         }
     }
 
+    func readCredentialMeta() -> CredentialMeta? {
+        guard let json = readKeychainJSON() else { return nil }
+        let tier = json["rateLimitTier"] as? String
+        let sub = json["subscriptionType"] as? String
+        return CredentialMeta(rateLimitTier: tier, subscriptionType: sub)
+    }
+
     // MARK: - Keychain
 
-    private func readOAuthToken() -> String? {
+    private func readKeychainJSON() -> [String: Any]? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "Claude Code-credentials",
@@ -63,10 +84,13 @@ actor UsageAPIService {
         guard status == errSecSuccess,
               let data = result as? Data,
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let oauth = json["claudeAiOauth"] as? [String: Any],
-              let token = oauth["accessToken"] as? String
+              let oauth = json["claudeAiOauth"] as? [String: Any]
         else { return nil }
 
-        return token
+        return oauth
+    }
+
+    private func readOAuthToken() -> String? {
+        readKeychainJSON()?["accessToken"] as? String
     }
 }

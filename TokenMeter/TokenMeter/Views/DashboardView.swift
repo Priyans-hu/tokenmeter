@@ -99,6 +99,12 @@ struct HeaderView: View {
                 .font(.headline)
                 .fontWeight(.semibold)
 
+            if viewModel.planAutoDetected {
+                Text(viewModel.selectedPlan.displayName)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+
             Spacer()
 
             if let summary = viewModel.summary {
