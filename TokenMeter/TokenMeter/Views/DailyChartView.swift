@@ -31,6 +31,7 @@ struct DailyChartView: View {
                     Text("30d").tag(30)
                 }
                 .pickerStyle(.segmented)
+                .labelsHidden()
                 .frame(width: 120)
             }
 
