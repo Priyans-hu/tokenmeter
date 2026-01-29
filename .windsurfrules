@@ -1,0 +1,19 @@
+You are working on TokenMeter, a native macOS menu bar app for tracking Claude Code usage.
+
+Tech: Swift 5.9+, SwiftUI, macOS 14+, Swift Package Manager
+Build: cd TokenMeter && swift build -c release
+
+Architecture:
+- TokenMeterApp.swift — MenuBarExtra entry point
+- UsageViewModel.swift — @MainActor ObservableObject, manages state/timer/cache/notifications
+- Services/NativeUsageParser.swift — JSONL parser for ~/.claude/projects/
+- Services/UsageAPIService.swift — actor, Keychain + Anthropic API
+- Models/UsageSummary.swift — data models, ClaudePlan enum
+- Views/ — SwiftUI views
+
+Patterns:
+- actor for services, @MainActor for view model
+- async let for concurrent API + local data fetch
+- API data preferred for rate limits, JSONL for costs
+- UserDefaults for caching, UNUserNotificationCenter for alerts
+- No Xcode project, SPM only

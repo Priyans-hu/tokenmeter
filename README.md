@@ -6,6 +6,8 @@ Reads Claude Code's OAuth token from Keychain for real rate limit data, and pars
 
 ![macOS](https://img.shields.io/badge/macOS_14+-000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-007AFF?logo=swift&logoColor=white)
+![Downloads](https://img.shields.io/github/downloads/Priyans-hu/tokenmeter/total)
+![License](https://img.shields.io/github/license/Priyans-hu/tokenmeter)
 
 ## Features
 
@@ -127,7 +129,8 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ## Contributing
 
-1. Fork and clone the repo
-2. Create a feature branch: `git checkout -b feat/my-feature`
-3. Build: `cd TokenMeter && swift build -c release`
-4. Submit a PR to `main`
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
