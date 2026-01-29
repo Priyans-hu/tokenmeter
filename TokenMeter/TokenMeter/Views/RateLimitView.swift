@@ -6,6 +6,8 @@ struct RateLimitView: View {
     let outputLimit: UInt64
     var apiUtilization: APIWindowUtilization?
 
+    @State private var isHovered = false
+
     private var hasAPI: Bool { apiUtilization != nil }
 
     private var percentage: Double {
@@ -40,10 +42,16 @@ struct RateLimitView: View {
 
                 Spacer()
 
-                if info.sessionsActive > 0 {
-                    Text("\(info.sessionsActive) session\(info.sessionsActive == 1 ? "" : "s")")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                if hasAPI {
+                    Text(String(format: "%.0f%%", percentage))
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(progressColor)
+                } else {
+                    Text("\(Int(percentage))%")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(progressColor)
                 }
             }
 
@@ -61,46 +69,46 @@ struct RateLimitView: View {
             .frame(height: 8)
 
             HStack {
-                if hasAPI {
-                    Text(String(format: "%.1f%%", percentage))
-                        .font(.caption2)
-                        .fontWeight(.medium)
-
-                    Text("used")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                } else {
-                    Text("\(formatTokens(info.outputTokens)) / \(formatTokens(outputLimit))")
-                        .font(.caption2)
-                        .fontWeight(.medium)
-
-                    Text("(\(Int(percentage))%)")
+                if let reset = resetTimeText {
+                    Text("Resets in \(reset)")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
 
                 Spacer()
 
-                if let reset = resetTimeText {
-                    Text("Resets in \(reset)")
+                if info.sessionsActive > 0 {
+                    Text("\(info.sessionsActive) session\(info.sessionsActive == 1 ? "" : "s")")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
 
-            if hasAPI {
-                Text("Output tokens (\(formatTokens(info.outputTokens)) used)")
+            // Hover details
+            if isHovered {
+                HStack(spacing: 12) {
+                    Label("\(formatTokens(info.outputTokens)) out", systemImage: "arrow.up")
+                    Label("\(formatTokens(info.inputTokens)) in", systemImage: "arrow.down")
+                }
+                .font(.system(size: 9))
+                .foregroundColor(.secondary.opacity(0.8))
+                .transition(.opacity)
+            }
+
+            if !hasAPI {
+                Text("Limits are estimates")
                     .font(.system(size: 9))
-                    .foregroundColor(.secondary.opacity(0.7))
-            } else {
-                Text("Output tokens (limits are estimates)")
-                    .font(.system(size: 9))
-                    .foregroundColor(.secondary.opacity(0.7))
+                    .foregroundColor(.secondary.opacity(0.5))
             }
         }
         .padding(10)
-        .background(Color.gray.opacity(0.05))
+        .background(Color.gray.opacity(isHovered ? 0.1 : 0.05))
         .cornerRadius(8)
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isHovered = hovering
+            }
+        }
     }
 
     // MARK: - Formatting

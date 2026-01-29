@@ -44,6 +44,14 @@ struct DashboardView: View {
                             Divider()
                                 .padding(.vertical, 4)
 
+                            // Usage Heatmap
+                            if !summary.hourly.isEmpty {
+                                UsageHeatmapView(hourly: summary.hourly)
+                            }
+
+                            Divider()
+                                .padding(.vertical, 4)
+
                             // Cost Summary
                             CostSummaryView(summary: summary)
 

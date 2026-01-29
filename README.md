@@ -1,23 +1,24 @@
 # TokenMeter
 
-macOS menu bar app for visualizing Claude Code token usage and costs. Built with SwiftUI.
+macOS menu bar app for tracking Claude Code usage, rate limits, and costs. Built with SwiftUI.
 
-Parses Claude Code's local conversation data to show real-time usage stats — no API keys or external tools needed.
+Reads Claude Code's OAuth token from Keychain for real rate limit data, and parses local JSONL files for cost and usage analytics.
 
 ![macOS](https://img.shields.io/badge/macOS_14+-000?logo=apple&logoColor=white)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-007AFF?logo=swift&logoColor=white)
 
 ## Features
 
-- **Menu bar app** — lives in menu bar, no dock icon, works in fullscreen
-- **Native macOS** — built with SwiftUI and Swift Charts
-- **Rate limit tracking** — 5-hour session and weekly output token usage with plan-based limits
-- **Cost summary** — today / this week / this month (calculated with embedded pricing)
+- **Real rate limits** — fetches actual utilization from Anthropic API via Claude Code's OAuth token
+- **Rate limit notifications** — macOS alerts when session or weekly usage hits 80%
+- **Usage heatmap** — hour-by-day grid showing when you're most active (7/14/30 day range)
+- **Hover details** — token breakdown (input/output) appears on hover over rate limit bars
+- **Cost summary** — today / this week / this month (API-equivalent pricing)
 - **Daily cost chart** — bar chart with 7/14/30 day range
 - **Model breakdown** — donut chart showing per-model usage (Opus, Sonnet, Haiku)
-- **Plan selection** — Pro / Max 5x / Max 20x for estimated rate limits
+- **Menu bar app** — lives in menu bar, no dock icon, works in fullscreen
 - **Auto-refresh** — every 5 minutes (configurable)
-- **Zero dependencies** — parses `~/.claude/` JSONL files directly, no external tools required
+- **Fallback mode** — if Keychain/API unavailable, uses local JSONL estimates with plan selection
 
 ## Installation
 
@@ -58,21 +59,26 @@ cp .build/release/TokenMeter /Applications/TokenMeter.app/Contents/MacOS/TokenMe
 ### Prerequisites
 
 - macOS 14 (Sonoma) or later
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and used (generates the local data TokenMeter reads)
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed and used
 
 ## How It Works
 
-TokenMeter reads Claude Code's local JSONL files from `~/.claude/projects/`:
+### Rate Limits (real data)
+TokenMeter reads Claude Code's OAuth token from the macOS Keychain and calls `api.anthropic.com/api/oauth/usage` to get real utilization percentages and reset times. On first launch, macOS will ask you to allow Keychain access — click "Always Allow".
 
-1. **Daily usage** — scans all conversation JSONL files, groups by date, calculates token costs using embedded model pricing
-2. **Rate limits** — tracks output tokens in the last 5 hours (session) and 7 days (weekly), shows progress against estimated plan limits
-3. **Model breakdown** — identifies which models (Opus, Sonnet, Haiku) are being used and their relative costs
+### Usage Analytics (local data)
+Parses JSONL files from `~/.claude/projects/` and `~/.config/claude/projects/`:
+- **Daily costs** — groups by date, calculates using embedded model pricing
+- **Hourly heatmap** — groups by hour-of-day per date for activity patterns
+- **Model breakdown** — per-model token and cost breakdown
+- Deduplicates by `requestId` and filters `<synthetic>` entries
 
-No API keys, no external tools, no cloud services. Everything is local.
+### Notifications
+Sends macOS notifications when rate limit utilization reaches 80% (session or weekly). Throttled to once per hour per window. Toggle in Settings.
 
 ### Pricing
 
-Costs are calculated using Anthropic's published API-equivalent pricing (per million tokens):
+Costs are calculated using API-equivalent pricing (per million tokens):
 
 | Model | Input | Output | Cache Write | Cache Read |
 |-------|-------|--------|-------------|------------|
@@ -88,28 +94,33 @@ Costs are calculated using Anthropic's published API-equivalent pricing (per mil
 ```
 TokenMeter/
 ├── TokenMeterApp.swift              # App entry with MenuBarExtra
-├── UsageViewModel.swift             # State management, timer, caching
+├── UsageViewModel.swift             # State, timer, caching, notifications
 ├── Models/
 │   └── UsageSummary.swift           # Data models + ClaudePlan enum
 ├── Services/
 │   ├── NativeUsageParser.swift      # JSONL parser + pricing engine
+│   ├── UsageAPIService.swift        # Keychain + Anthropic API client
 │   └── UpdateChecker.swift          # GitHub releases checker
 └── Views/
     ├── DashboardView.swift          # Main popover container
-    ├── RateLimitView.swift          # Progress bar with plan limits
+    ├── RateLimitView.swift          # Progress bar with hover details
+    ├── UsageHeatmapView.swift       # Hour-by-day activity heatmap
     ├── CostSummaryView.swift        # Today/week/month cost cards
     ├── DailyChartView.swift         # Swift Charts bar chart
     ├── ModelBreakdownView.swift     # Swift Charts donut chart
-    └── SettingsView.swift           # Plan picker, refresh interval
+    └── SettingsView.swift           # Plan, notifications, refresh interval
 ```
 
 ```
 Data Flow:
-  ~/.claude/projects/*.jsonl  ──>  NativeUsageParser  ──>  DailyUsage + RateLimits
-                                        │
+  Keychain OAuth  ──>  UsageAPIService  ──>  Real rate limit %
+                                │
+  ~/.claude/*.jsonl  ──>  NativeUsageParser  ──>  Costs + Hourly + Tokens
+                                │
   Timer (5min)  ──>  UsageViewModel  ──>  UsageSummary  ──>  SwiftUI Views
-                          │
-                          └──>  UserDefaults cache (instant reopen)
+                          │                                      │
+                          ├──>  UserDefaults cache               └──>  Notifications (≥80%)
+                          └──>  UNUserNotificationCenter
 ```
 
 ## License
