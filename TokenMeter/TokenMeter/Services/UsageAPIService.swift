@@ -40,6 +40,11 @@ struct CredentialMeta {
 actor UsageAPIService {
     private let endpoint = URL(string: "https://api.anthropic.com/api/oauth/usage")!
 
+    // In-memory cache — read keychain once per app session, not on every refresh.
+    // Only invalidated on 401 (Claude Code refreshed the token).
+    // No TTL: the token doesn't change unless Claude Code rotates it.
+    private var cachedOAuth: [String: Any]?
+
     func fetchUsage() async -> APIUsageResponse? {
         guard let token = readOAuthToken() else { return nil }
 
@@ -52,7 +57,16 @@ actor UsageAPIService {
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            guard let http = response as? HTTPURLResponse else {
+                return nil
+            }
+            if http.statusCode == 401 {
+                // Token was refreshed by Claude Code — clear cache so next
+                // refresh reads the new token from keychain
+                invalidateCache()
+                return nil
+            }
+            guard http.statusCode == 200 else {
                 return nil
             }
             return try JSONDecoder().decode(APIUsageResponse.self, from: data)
@@ -62,13 +76,30 @@ actor UsageAPIService {
     }
 
     func readCredentialMeta() -> CredentialMeta? {
-        guard let json = readKeychainJSON() else { return nil }
+        guard let json = cachedOrReadKeychainJSON() else { return nil }
         let tier = json["rateLimitTier"] as? String
         let sub = json["subscriptionType"] as? String
         return CredentialMeta(rateLimitTier: tier, subscriptionType: sub)
     }
 
+    func invalidateCache() {
+        cachedOAuth = nil
+    }
+
     // MARK: - Keychain
+
+    private func cachedOrReadKeychainJSON() -> [String: Any]? {
+        if let cached = cachedOAuth {
+            return cached
+        }
+
+        guard let json = readKeychainJSON() else {
+            return nil
+        }
+
+        cachedOAuth = json
+        return json
+    }
 
     private func readKeychainJSON() -> [String: Any]? {
         let query: [String: Any] = [
@@ -91,6 +122,6 @@ actor UsageAPIService {
     }
 
     private func readOAuthToken() -> String? {
-        readKeychainJSON()?["accessToken"] as? String
+        cachedOrReadKeychainJSON()?["accessToken"] as? String
     }
 }
