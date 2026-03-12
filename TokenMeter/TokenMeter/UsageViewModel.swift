@@ -23,9 +23,33 @@ final class UsageViewModel: ObservableObject {
     }
 
     private var refreshTimer: Timer?
-    private var refreshInterval: TimeInterval = 300
-    private var lastSessionNotification: Date?
-    private var lastWeeklyNotification: Date?
+    private var defaultsObserver: Any?
+
+    private var currentRefreshInterval: TimeInterval {
+        let stored = UserDefaults.standard.integer(forKey: "refreshInterval")
+        let value = stored > 0 ? stored : 300
+        return TimeInterval(max(60, min(900, value)))
+    }
+
+    private var lastSessionNotification: Date? {
+        get {
+            let ts = UserDefaults.standard.double(forKey: "lastSessionNotificationTS")
+            return ts > 0 ? Date(timeIntervalSince1970: ts) : nil
+        }
+        set {
+            UserDefaults.standard.set(newValue?.timeIntervalSince1970 ?? 0, forKey: "lastSessionNotificationTS")
+        }
+    }
+
+    private var lastWeeklyNotification: Date? {
+        get {
+            let ts = UserDefaults.standard.double(forKey: "lastWeeklyNotificationTS")
+            return ts > 0 ? Date(timeIntervalSince1970: ts) : nil
+        }
+        set {
+            UserDefaults.standard.set(newValue?.timeIntervalSince1970 ?? 0, forKey: "lastWeeklyNotificationTS")
+        }
+    }
 
     init() {
         let planStr = UserDefaults.standard.string(forKey: "claudePlan") ?? "pro"
@@ -40,11 +64,21 @@ final class UsageViewModel: ObservableObject {
             await checkForUpdates()
         }
         startTimer()
+        observeRefreshIntervalChanges()
+    }
+
+    deinit {
+        refreshTimer?.invalidate()
+        if let observer = defaultsObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     func refresh() async {
         isLoading = true
         errorMessage = nil
+
+        await detectPlan()
 
         async let localResult = Task.detached { [parser] in
             parser.parse(days: 30)
@@ -53,6 +87,10 @@ final class UsageViewModel: ObservableObject {
 
         let result = await localResult
         let apiUsage = await apiResult
+
+        if result.parseErrors > 0 {
+            errorMessage = "\(result.parseErrors) JSONL line\(result.parseErrors == 1 ? "" : "s") failed to parse"
+        }
 
         var rateLimits = result.rateLimits
         rateLimits.apiSession = apiUsage?.fiveHour
@@ -127,10 +165,33 @@ final class UsageViewModel: ObservableObject {
     }
 
     private func startTimer() {
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: refreshInterval, repeats: true) { [weak self] _ in
+        refreshTimer?.invalidate()
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: currentRefreshInterval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 await self?.refresh()
             }
+        }
+    }
+
+    private nonisolated func observeRefreshIntervalChanges() {
+        let observer = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.restartTimerIfNeeded()
+            }
+        }
+        Task { @MainActor in
+            self.defaultsObserver = observer
+        }
+    }
+
+    private func restartTimerIfNeeded() {
+        let desired = currentRefreshInterval
+        if refreshTimer?.timeInterval != desired {
+            startTimer()
         }
     }
 

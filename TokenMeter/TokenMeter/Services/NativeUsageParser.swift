@@ -1,13 +1,16 @@
 import Foundation
+import os.log
 
 struct ParseResult {
     let daily: [DailyUsage]
     let hourly: [HourlyUsage]
     let rateLimits: RateLimitInfo
+    let parseErrors: Int
 }
 
 struct NativeUsageParser {
     private let projectsDirs: [URL]
+    private static let logger = Logger(subsystem: "com.tokenmeter", category: "parser")
 
     init() {
         let home = FileManager.default.homeDirectoryForCurrentUser
@@ -22,8 +25,11 @@ struct NativeUsageParser {
         let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: now)!
 
         var rawEntries: [ParsedEntry] = []
+        var totalParseErrors = 0
         for dir in projectsDirs {
-            rawEntries.append(contentsOf: scanJSONLFiles(in: dir, modifiedAfter: cutoff))
+            let (entries, errors) = scanJSONLFiles(in: dir, modifiedAfter: cutoff)
+            rawEntries.append(contentsOf: entries)
+            totalParseErrors += errors
         }
 
         // Deduplicate by requestId — Claude Code writes multiple JSONL lines
@@ -34,13 +40,18 @@ struct NativeUsageParser {
         let hourly = aggregateHourlyUsage(entries: entries, since: cutoff)
         let rateLimits = computeRateLimits(entries: entries, now: now)
 
-        return ParseResult(daily: daily, hourly: hourly, rateLimits: rateLimits)
+        if totalParseErrors > 0 {
+            Self.logger.warning("parse: \(totalParseErrors) JSONL line(s) failed to decode")
+        }
+
+        return ParseResult(daily: daily, hourly: hourly, rateLimits: rateLimits, parseErrors: totalParseErrors)
     }
 
     // MARK: - File Scanning
 
-    private func scanJSONLFiles(in dir: URL, modifiedAfter: Date) -> [ParsedEntry] {
+    private func scanJSONLFiles(in dir: URL, modifiedAfter: Date) -> (entries: [ParsedEntry], errors: Int) {
         var entries: [ParsedEntry] = []
+        var errors = 0
         let fm = FileManager.default
 
         guard fm.fileExists(atPath: dir.path),
@@ -48,7 +59,7 @@ struct NativeUsageParser {
             at: dir,
             includingPropertiesForKeys: [.contentModificationDateKey],
             options: [.skipsHiddenFiles]
-        ) else { return entries }
+        ) else { return (entries, 0) }
 
         for case let fileURL as URL in enumerator {
             guard fileURL.pathExtension == "jsonl" else { continue }
@@ -58,25 +69,41 @@ struct NativeUsageParser {
                 continue
             }
 
-            if let fileEntries = parseJSONLFile(at: fileURL) {
-                entries.append(contentsOf: fileEntries)
-            }
+            let (fileEntries, fileErrors) = parseJSONLFile(at: fileURL)
+            entries.append(contentsOf: fileEntries)
+            errors += fileErrors
         }
 
-        return entries
+        return (entries, errors)
     }
 
-    private func parseJSONLFile(at url: URL) -> [ParsedEntry]? {
-        guard let content = try? String(contentsOf: url, encoding: .utf8) else { return nil }
+    private func parseJSONLFile(at url: URL) -> (entries: [ParsedEntry], errors: Int) {
+        guard let content = try? String(contentsOf: url, encoding: .utf8) else { return ([], 0) }
 
         var entries: [ParsedEntry] = []
+        var errors = 0
         let decoder = JSONDecoder()
 
-        for line in content.components(separatedBy: .newlines) {
-            guard !line.isEmpty,
-                  let data = line.data(using: .utf8),
-                  let raw = try? decoder.decode(RawJournalEntry.self, from: data),
-                  raw.type == "assistant",
+        for (lineNumber, line) in content.components(separatedBy: .newlines).enumerated() {
+            guard !line.isEmpty else { continue }
+
+            guard let data = line.data(using: .utf8) else {
+                Self.logger.warning("parseJSONLFile: invalid UTF-8 at \(url.lastPathComponent):\(lineNumber + 1)")
+                errors += 1
+                continue
+            }
+
+            let raw: RawJournalEntry
+            do {
+                raw = try decoder.decode(RawJournalEntry.self, from: data)
+            } catch {
+                Self.logger.warning("parseJSONLFile: decode error at \(url.lastPathComponent):\(lineNumber + 1) — \(error.localizedDescription)")
+                errors += 1
+                continue
+            }
+
+            // Skip non-assistant entries, synthetic models, or entries without usage — these aren't errors
+            guard raw.type == "assistant",
                   let usage = raw.message?.usage,
                   let model = raw.message?.model,
                   model != "<synthetic>",
@@ -94,7 +121,7 @@ struct NativeUsageParser {
             ))
         }
 
-        return entries
+        return (entries, errors)
     }
 
     // MARK: - Deduplication
