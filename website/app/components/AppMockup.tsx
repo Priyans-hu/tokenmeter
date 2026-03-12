@@ -119,15 +119,15 @@ export default function AppMockup() {
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <div className="rounded-lg bg-white/[0.03] p-2 text-center">
                   <p className="text-[10px] text-gray-500">Today</p>
-                  <p className="text-sm font-semibold text-white">$94.82</p>
+                  <p className="text-sm font-semibold text-white">$12.48</p>
                 </div>
                 <div className="rounded-lg bg-white/[0.03] p-2 text-center">
                   <p className="text-[10px] text-gray-500">This Week</p>
-                  <p className="text-sm font-semibold text-white">$295</p>
+                  <p className="text-sm font-semibold text-white">$67.30</p>
                 </div>
                 <div className="rounded-lg bg-white/[0.03] p-2 text-center">
                   <p className="text-[10px] text-gray-500">This Month</p>
-                  <p className="text-sm font-semibold text-white">$1,340</p>
+                  <p className="text-sm font-semibold text-white">$184.25</p>
                 </div>
               </div>
             </div>
